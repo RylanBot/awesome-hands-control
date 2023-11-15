@@ -1,0 +1,23 @@
+/* npx tailwindcss -i ./src/index.css -o ./dist/output.css --watch */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-user-select: none;
+  /* font-family: Georgia; */
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.header-drag {
+  -webkit-app-region: drag;
+}
+
+.btn-no-drag {
+  -webkit-app-region: no-drag;
+}

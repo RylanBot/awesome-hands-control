@@ -1,0 +1,10 @@
+{
+  "left": [
+    "images/hands/left-fist.png",
+    "images/hands/left-palm.png"
+  ],
+  "right": [
+    "images/hands/right-fist.png",
+    "images/hands/right-palm.png"
+  ]
+}
