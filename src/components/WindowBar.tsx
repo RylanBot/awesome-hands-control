@@ -1,6 +1,6 @@
 
 
-import { ArrowsPointingInIcon, BarsArrowDownIcon, BarsArrowUpIcon, ChevronDoubleDownIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { BarsArrowDownIcon, BarsArrowUpIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 
 

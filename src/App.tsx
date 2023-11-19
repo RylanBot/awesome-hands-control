@@ -31,7 +31,13 @@ const App = () => {
       element: <MainLayout />,
       children: [
         { index: true, element: <Dashboard /> }, // 根路径
-        { path: 'setting', element: <SettingPage /> },
+        {
+          path: 'setting',
+          element: <SettingPage />,
+          children: [
+            { path: ':software', element: <SettingPage /> }
+          ]
+        },
       ],
     },
     // 摄像机窗口

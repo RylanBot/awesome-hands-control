@@ -2,7 +2,7 @@ import { PlusIcon } from "@heroicons/react/24/solid";
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar";
-import SoftwareCard from "../components/SoftwareCard";
+import { GlobalSoftwareCard, SoftwareCard } from "../components/SoftwareCard";
 import { setConfig } from "../utils/configSlice";
 import { RootState } from "../utils/store";
 
@@ -35,6 +35,10 @@ const Dashboard: React.FC = () => {
             <div className="flex-grow p-4 mt-8 mb-4">
                 <div className="flex flex-wrap gap-10 ml-32">
 
+                    {/* 全局鼠标操作 */}
+                    <GlobalSoftwareCard />
+
+                    {/* 用户自定义 */}
                     {appsConfig && Object.keys(appsConfig).map((appName) => (
                         <SoftwareCard key={appName} icon={appsConfig[appName].icon} name={appName} />
                     ))}

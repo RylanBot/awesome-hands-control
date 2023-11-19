@@ -99,9 +99,6 @@ const GestureRecognition: React.FC = () => {
         };
     }, []);
 
-    // 监听当前活跃进程名（异步更新
-    // 直接用变量保存也行（？） 没必要 redux
-    // let currentProcess = ""; // 这样异步无法正常读取
     const currentProcessRef = useRef<string>("");
     useEffect(() => {
         window.coreApi.transmitProcess((processName: string) => {
@@ -286,13 +283,13 @@ const GestureRecognition: React.FC = () => {
             {/* 输出的识别手势标签 */}
             <div className='absolute top-0 w-screen px-4 py-2 mt-8'>
                 {gestures.left && (
-                    <div className="float-left bg-emerald-500 text-white px-3 py-2 rounded-lg shadow-lg">
+                    <div className="float-left bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
                         {gestures.left}
                     </div>
                 )}
 
                 {gestures.right && (
-                    <div className="float-right bg-cyan-500 text-white px-3 py-2 rounded-lg shadow-lg">
+                    <div className="float-right bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
                         {gestures.right}
                     </div>
                 )}

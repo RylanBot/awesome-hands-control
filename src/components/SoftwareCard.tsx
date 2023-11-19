@@ -1,6 +1,5 @@
 import { TrashIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface SoftwareCardProps {
     icon: string;
@@ -8,7 +7,8 @@ interface SoftwareCardProps {
 }
 
 const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
-    const [isSwitchedOn, setSwitchedOn] = useState(false);
+   
+    const navigate = useNavigate();
 
     return (
         <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative">
@@ -20,26 +20,39 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
 
             <div className="flex flex-col items-center mt-4">
                 {/* 软件图标 */}
-                <Link to="setting">
-                    <img src={`data:image/svg+xml;base64,${icon}`} className="w-12 h-12" />
-                </Link>
+                <img
+                    src={`data:image/svg+xml;base64,${icon}`}
+                    onClick={() => { navigate(`setting/${name}`); }}
+                    className="w-14 h-14 cursor-pointer hover:cursor-pointer"
+                />
 
                 {/* 软件名字 */}
                 <span className="text-md font-bold text-gray-700 mt-3">{name}</span>
-
-                {/* 开关 */}
-                <button
-                    onClick={() => setSwitchedOn(!isSwitchedOn)}
-                    className={`relative w-12 h-6 mt-3 rounded-full overflow-hidden transition-colors duration-200 ${isSwitchedOn ? 'bg-teal-500' : 'bg-gray-400'} shadow-sm hover:shadow-md`}
-                >
-                    <span
-                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isSwitchedOn ? 'translate-x-6' : 'translate-x-0'}`}
-                    ></span>
-                </button>
             </div>
 
         </div>
     );
 }
 
-export default SoftwareCard;
+const GlobalSoftwareCard: React.FC = () => {
+
+    const navigate = useNavigate();
+
+    return (
+        <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative">
+
+            <div className="flex flex-col items-center mt-4">
+                <img
+                    src={"/images/icons/GlobalSetting.png"}
+                    onClick={() => { navigate("setting/Global"); }}
+                    className="w-14 h-14 cursor-pointer hover:cursor-pointer"
+                />
+                <span className="text-md font-bold text-gray-700 mt-3">Global Setting</span>
+            </div>
+
+        </div>
+    );
+}
+
+export { GlobalSoftwareCard, SoftwareCard };
+

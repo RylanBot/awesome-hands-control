@@ -15,7 +15,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC!, '/images/icons/camera.png'),
+    icon: path.join(process.env.VITE_PUBLIC!, '/images/icons/MainWindow.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // 是否在渲染进程中启用 Node.js 集成，即 *.tsx 能直接访问系统接口
@@ -55,7 +55,7 @@ function createMainWindow() {
 let cameraWindow: BrowserWindow | null
 function createCameraWindow() {
   cameraWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC! as string, '/images/icons/camera.png'),
+    icon: path.join(process.env.VITE_PUBLIC! as string, '/images/icons/CameraWindow.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
