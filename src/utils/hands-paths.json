@@ -1,16 +1,16 @@
 {
   "left": [
-    "/images/hands/Close_Fist_Left.png",
-    "/images/hands/Open_Palm_Left.png",
-    "/images/hands/Thumb_Up_Left.png",
-    "/images/hands/Thumb_Down_Left.png",
-    "/images/hands/Victory_Left.png"
+    "Close_Fist_Left",
+    "Open_Palm_Left",
+    "Thumb_Down_Left",
+    "Thumb_Up_Left",
+    "Victory_Left"
   ],
   "right": [
-    "/images/hands/Close_Fist_Right.png",
-    "/images/hands/Open_Palm_Right.png",
-    "/images/hands/Thumb_Up_Right.png",
-    "/images/hands/Thumb_Down_Right.png",
-    "/images/hands/Victory_Right.png"
+    "Close_Fist_Right",
+    "Open_Palm_Right",
+    "Thumb_Down_Right",
+    "Thumb_Up_Right",
+    "Victory_Right"
   ]
 }

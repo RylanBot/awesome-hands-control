@@ -2,28 +2,21 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { Category, FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Webcam from 'react-webcam';
 import Loading from "../components/Loading";
-import { setConfig } from '../utils/configSlice';
-import { RootState } from '../utils/store';
+import useFetchConfig from '../hooks/useFetchConfig';
+import { AppConfig } from '../stores/configSlice';
+import { RootState } from '../stores/store';
 
 const GestureRecognition: React.FC = () => {
 
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const dispatch = useDispatch();
-
-    // 两个窗口的redux实例不同（？ 
-    const apps = useSelector((state: RootState) => state.config.apps);
-
-    useEffect(() => {
-        window.coreApi.initialConfig((config) => {
-            dispatch(setConfig(config));
-        });
-    }, [dispatch]); // 指定当依赖依赖发生变化时才执行 useEffect 中的代码
-
+    // 两个窗口的redux实例不同，需要再次调用
+    useFetchConfig();
+    const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
     // 模型加载状态
     const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -36,7 +29,6 @@ const GestureRecognition: React.FC = () => {
             [isLeftHand ? 'left' : 'right']: text,
         }));
     };
-
 
     // 核心步骤：读取模型 👋
     useEffect(() => {
@@ -66,7 +58,7 @@ const GestureRecognition: React.FC = () => {
         }
 
         fetchData();
-    }, []);
+    }, []); // 指定当依赖依赖发生变化时才执行 useEffect 中的代码，如果是空数组则只会在组件挂载时执行一次，不会再次触发。
 
     // 调整 canvas 尺寸适配屏幕
     useEffect(() => {
@@ -101,7 +93,7 @@ const GestureRecognition: React.FC = () => {
 
     const currentProcessRef = useRef<string>("");
     useEffect(() => {
-        window.coreApi.transmitProcess((processName: string) => {
+        window.controlApi.transmitProcess((processName: string) => {
             currentProcessRef.current = processName;
         });
     }, []);
@@ -113,13 +105,13 @@ const GestureRecognition: React.FC = () => {
         const now = Date.now();
         // 防抖
         if (currentShortcut && (now - lastTriggerRef.current.timestamp > 1000 || lastTriggerRef.current.shortcut !== currentShortcut)) {
-            window.coreApi.triggerShortcut(currentShortcut);
+            window.controlApi.triggerShortcut(currentShortcut);
             lastTriggerRef.current = { shortcut: currentShortcut, timestamp: now };
         }
-    }, [gestures]); 
+    }, [gestures]);
 
 
-    const onResult = (result: GestureRecognizerResult) => {
+    function onResult(result: GestureRecognizerResult) {
         // console.log(result);
 
         if (!isModelLoaded) {
@@ -150,7 +142,7 @@ const GestureRecognition: React.FC = () => {
 
     };
 
-    const drawHand = (handLandmarks: Landmark[], canvasCtx: CanvasRenderingContext2D, isLeftHand: boolean) => {
+    function drawHand(handLandmarks: Landmark[], canvasCtx: CanvasRenderingContext2D, isLeftHand: boolean) {
 
         const fingerConnections = [
             [0, 1, 2, 3, 4], // 大拇指
@@ -224,7 +216,7 @@ const GestureRecognition: React.FC = () => {
 
     };
 
-    const displayGesture = (gesture: Category, isLeftHand: boolean) => {
+    function displayGesture(gesture: Category, isLeftHand: boolean) {
         // const { score, categoryName } = gesture;
         const { categoryName } = gesture;
         // const displayText = categoryName === 'None' ? "" : `${categoryName} (${(score * 100).toFixed(1)}%)`;
@@ -233,13 +225,12 @@ const GestureRecognition: React.FC = () => {
 
     };
 
-    const findShortcut = () => {
+    function findShortcut() {
+        const currentProcess: string = currentProcessRef.current.replace(/\r\n$/, '');;
+        const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === currentProcess);
 
-        const currentProcess = currentProcessRef.current.replace(/\r\n$/, '');;
-        const appData = apps[currentProcess];
-
-        if (appData) {
-            const shortcuts = appData.shortcut;
+        if (currentConfig) {
+            const shortcuts = currentConfig.shortcut;
 
             for (const shortcutName in shortcuts) {
                 if (shortcuts.hasOwnProperty(shortcutName)) {

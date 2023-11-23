@@ -1,5 +1,8 @@
 import { TrashIcon } from '@heroicons/react/24/solid';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { updateTimestamp } from '../stores/configSlice';
 
 interface SoftwareCardProps {
     icon: string;
@@ -7,21 +10,53 @@ interface SoftwareCardProps {
 }
 
 const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
-   
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    function handleDeleteClick() {
+        setShowDeleteConfirm(true);
+    };
+    function handleCancelDelete() {
+        setShowDeleteConfirm(false);
+    };
+    async function handleConfirmDelete() {
+        const deleteSuccess = await window.configApi.deleteAppConfig(name);
+        if (deleteSuccess) {
+            dispatch(updateTimestamp());
+        }
+        setShowDeleteConfirm(false);
+    };
 
     return (
         <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative">
 
             {/* 删除按钮 */}
-            <button>
+            <button onClick={handleDeleteClick}>
                 <TrashIcon className="h-6 w-6 text-gray-500 hover:text-red-500 absolute top-2 right-2" />
             </button>
+            {/* 删除确认对话框 */}
+            {showDeleteConfirm && (
+                <div className="absolute top-0 w-48 bg-white p-4 border border-gray-200 rounded-lg shadow-lg text-xs font-bold">
+                    <div className="flex justify-center">
+                        <button onClick={handleConfirmDelete}
+                            className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-red-600"
+                        >
+                            Delete
+                        </button>
+                        <button onClick={handleCancelDelete}
+                            className="bg-slate-100 text-zinc-800 px-4 py-2 rounded-lg hover:bg-slate-200"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="flex flex-col items-center mt-4">
                 {/* 软件图标 */}
                 <img
-                    src={`data:image/svg+xml;base64,${icon}`}
+                    src={`data:image/x-icon;base64,${icon}`}
                     onClick={() => { navigate(`setting/${name}`); }}
                     className="w-14 h-14 cursor-pointer hover:cursor-pointer"
                 />
@@ -35,7 +70,6 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
 }
 
 const GlobalSoftwareCard: React.FC = () => {
-
     const navigate = useNavigate();
 
     return (

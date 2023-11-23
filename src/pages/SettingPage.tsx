@@ -6,7 +6,7 @@ import SettingModal from '../components/SettingModal';
 import { ArrowSmallLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useSelector } from 'react-redux';
 import SettingCard from '../components/SettingCard';
-import { RootState } from '../utils/store';
+import { RootState } from '../stores/store';
 
 const GlobalSetting: React.FC = () => {
     return (
@@ -26,21 +26,27 @@ const SettingPage: React.FC = () => {
     const [isModalVisible, setModalVisible] = useState(false);
 
     const UserSetting: React.FC = () => {
-        const appsConfig = useSelector((state: RootState) => state.config.apps);
-        const shortcutData = appsConfig[software!].shortcut;
+        const appConfigs = useSelector((state: RootState) => state.config.apps);
+        const currentConfig = appConfigs.find(appConfig => appConfig.name === software);
 
-        return (
-            <>
-                {Object.keys(shortcutData).map((shortcut, index) => (
-                    <SettingCard
-                        key={index}
-                        shortcut={shortcut}
-                        leftHand={shortcutData[shortcut][0]}
-                        rightHand={shortcutData[shortcut][1]}
-                    />
-                ))}
-            </>
-        );
+        if (currentConfig) {
+            const shortcutData = currentConfig.shortcut;
+
+            return (
+                <>
+                    {shortcutData && Object.keys(shortcutData).length > 0
+                        && Object.keys(shortcutData).map((shortcut, index) => (
+                            <SettingCard
+                                key={index}
+                                shortcut={shortcut}
+                                leftHand={shortcutData[shortcut][0]}
+                                rightHand={shortcutData[shortcut][1]}
+                            />
+                        ))}
+                </>
+            );
+        }
+
     }
 
     return (

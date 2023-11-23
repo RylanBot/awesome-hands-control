@@ -139,8 +139,27 @@ contextBridge.exposeInMainWorld('windowApi', {
   resetCameraWindow: () => ipcRenderer.send('resetCameraWindow'),
 });
 
-contextBridge.exposeInMainWorld('coreApi', {
-  initialConfig: (callback) => ipcRenderer.on('initialConfig', (event, config) => { callback(config) }),
+
+contextBridge.exposeInMainWorld('configApi', {
+  initialConfig: async () => {
+    return ipcRenderer.invoke('initialConfig')
+  },
+  updateAppConfig: async (appPath) => {
+    return ipcRenderer.invoke('updateAppConfig', appPath);
+  },
+  deleteAppConfig: async (appName) => {
+    return ipcRenderer.invoke('deleteAppConfig', appName);
+  },
+  updateShortcutConfig: async (appName, shortcut, leftHand, rightHand) => {
+    return ipcRenderer.invoke('updateShortcutConfig', appName, shortcut, leftHand, rightHand);
+  },
+  deleteShortcutConfig: async (appName, shortcut) => {
+    return ipcRenderer.invoke('deleteShortcutConfig', appName, shortcut);
+  }
+});
+
+
+contextBridge.exposeInMainWorld('controlApi', {
   transmitProcess: (callback) => ipcRenderer.on('transmitProcess', (event, processName) => {
     const decoder = new TextDecoder('utf-8');
     const processNameString = decoder.decode(processName);

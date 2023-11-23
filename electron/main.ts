@@ -46,7 +46,6 @@ function createMainWindow() {
   // })
 
   mainWindow.on('ready-to-show', () => {
-    initialConfig('main');
   })
 
 }
@@ -83,7 +82,6 @@ function createCameraWindow() {
   // })
 
   cameraWindow.on('ready-to-show', () => {
-    initialConfig('camera');
     runWindowMonitor();
   })
 
@@ -227,53 +225,121 @@ ipcMain.on('resetCameraWindow', () => {
   }
 });
 
-// 读取初始化配置
-const initialConfig = (windowName) => {
+const Store = require('electron-store');
+const store = new Store({
+  name: 'awesome-hands-config',
+  fileExtension: 'json',
+});
 
-  const fs = require('fs');
+const localConfigs = store.get('apps');
 
-  const Store = require('electron-store');
-  const store = new Store({
-    name: 'awesome-hands-config',
-    fileExtension: 'json',
+function getIconBase64(exePath) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.join(process.env.VITE_PUBLIC!, '/scripts/getSoftwareIcon.ps1');
+    const command = `powershell.exe -Command "${scriptPath}" -exePath "${exePath}"`;
+    // exec是异步执行(避免接受到是 undefined)
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        console.error(err);
+        reject(err);
+        return;
+      }
+      resolve(stdout.trim());
+    });
   });
+}
 
+// 读取初始化配置
+ipcMain.handle('initialConfig', async (_, windowName) => {
+  const fs = require('fs');
   if (!fs.existsSync(store.path)) {
-    const defaultConfigPath = path.join(process.env.VITE_PUBLIC!, '/config/default-config.json');
-    const defaultConfig = require(defaultConfigPath);
-
+    const defaultConfig = []
     try {
       store.set('apps', defaultConfig);
-      mainWindow!.webContents.send('initialConfig', defaultConfig);
+      return defaultConfig;
     } catch (err) {
       console.error(err);
     }
   } else {
-    // 如果配置文件已存在，则直接读取并发送
-    // 多窗口的 redux 无法共享
-    const config = store.get('apps');
-    if (windowName === 'main') {
-      mainWindow!.webContents.send('initialConfig', config);
-    }
-    if (windowName === 'camera')
-      cameraWindow!.webContents.send('initialConfig', config);
+    return localConfigs;
+  }
+})
+
+// 添加软件
+ipcMain.handle('updateAppConfig', async (_, appPath) => {
+  // 获取不包含路径和扩展名的文件名
+  const appName = path.parse(appPath).name;
+
+  // 检查是否有重复的名称
+  const isDuplicateName = localConfigs.some((appConfig) => appConfig.name === appName);
+  if (isDuplicateName) {
+    // 重复添加
+    return false;
   }
 
-}
+  try {
+    const iconBase64 = await getIconBase64(appPath);
+    const newApp = {
+      name: appName,
+      icon: iconBase64,
+      shortcut: {}
+    };
+    localConfigs.push(newApp);
+    store.set('apps', localConfigs);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+});
+
+// 删除软件
+ipcMain.handle('deleteAppConfig', async (_, appName) => {
+  const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
+  if (index !== -1) {
+    localConfigs.splice(index, 1);
+    store.set('apps', localConfigs);
+    return true;
+  }
+});
+
+// 添加软件绑定的快捷键
+ipcMain.handle('updateShortcutConfig', async (_, appName, shortcut, leftHand, rightHand) => {
+  const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
+  if (index !== -1) {
+    const appConfig = localConfigs[index];
+    appConfig.shortcut[shortcut] = [leftHand, rightHand];
+    localConfigs[index] = appConfig;
+    store.set('apps', localConfigs);
+    return true;
+  }
+})
+
+// 删除快捷键
+ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
+  const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
+  if (index !== -1) {
+    const appConfig = localConfigs[index];
+    if (appConfig.shortcut.hasOwnProperty(shortcut)) {
+      delete appConfig.shortcut[shortcut];
+      store.set('apps', localConfigs);
+      return true;
+    }
+  }
+})
 
 const robot = require('robotjs');
-
 
 // exec 通过启动一个 shell 执行命令；spawn 启动一个新进程，在 node 环境直接执行一个命令
 const { exec, spawn } = require('child_process');
 
 // >> 进程判断
-ipcMain.on('triggerShortcut', (event, shortcut: string) => {
+ipcMain.on('triggerShortcut', (event, shortcut) => {
   robot.keyTap(shortcut);
 });
 
 let windowMonitor;
-const runWindowMonitor = () => {
+function runWindowMonitor() {
   if (VITE_DEV_SERVER_URL) {
     const pathToMonitor = path.join(process.env.VITE_PUBLIC!, 'WindowMonitor/WindowMonitor.exe');
     windowMonitor = spawn(pathToMonitor);
@@ -291,7 +357,7 @@ const runWindowMonitor = () => {
   }
 }
 
-const stopWindowMonitor = () => {
+function stopWindowMonitor() {
   if (windowMonitor) {
     windowMonitor.kill('SIGINT');
     windowMonitor = null;

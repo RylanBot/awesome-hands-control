@@ -1,29 +1,39 @@
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar";
 import { GlobalSoftwareCard, SoftwareCard } from "../components/SoftwareCard";
-import { setConfig } from "../utils/configSlice";
-import { RootState } from "../utils/store";
+import useFetchConfig from "../hooks/useFetchConfig";
+import { AppConfig, updateTimestamp } from "../stores/configSlice";
+import { RootState } from "../stores/store";
+
+interface ExeFile extends File {
+    path: string;
+}
 
 const Dashboard: React.FC = () => {
-
     const dispatch = useDispatch();
 
-    const appsConfig = useSelector((state: RootState) => state.config.apps);
-
-
-    // 读取配置中的软件列表
-    useEffect(() => {
-        window.coreApi.initialConfig((config) => {
-            dispatch(setConfig(config));
-        });
-    }, [dispatch]);
+    useFetchConfig(); // 使用自定义钩子获取配置
+    const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleAddSoftwareClick = () => {
+    function handleAddSoftwareClick() {
         fileInputRef.current?.click();
+    };
+
+    async function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const selectedFile = event.target.files?.[0] as ExeFile | undefined;
+
+        if (selectedFile && selectedFile.path) {
+            // 判断选择的软件是否已添加
+            const updateSuccess = await window.configApi.updateAppConfig(selectedFile.path);
+            if (updateSuccess) {
+                dispatch(updateTimestamp());
+            } else {
+                //... todo 软件重复添加弹窗
+            }
+        }
     };
 
     return (
@@ -39,13 +49,16 @@ const Dashboard: React.FC = () => {
                     <GlobalSoftwareCard />
 
                     {/* 用户自定义 */}
-                    {appsConfig && Object.keys(appsConfig).map((appName) => (
-                        <SoftwareCard key={appName} icon={appsConfig[appName].icon} name={appName} />
+                    {appsConfigs.map((appConfig, index) => (
+                        <SoftwareCard
+                            key={index}
+                            icon={appConfig.icon}
+                            name={appConfig.name}
+                        />
                     ))}
 
-
                     {/* 新增软件 */}
-                    <div
+                    < div
                         className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative cursor-pointer hover:shadow-lg transition-shadow"
                         onClick={handleAddSoftwareClick} >
                         <PlusIcon className="h-12 w-12 text-teal-500" />
@@ -60,8 +73,9 @@ const Dashboard: React.FC = () => {
                 ref={fileInputRef}
                 className="hidden"
                 accept=".exe"
+                onChange={handleFileInputChange}
             />
-        </div>
+        </div >
     );
 }
 

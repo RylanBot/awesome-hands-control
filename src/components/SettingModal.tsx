@@ -15,27 +15,47 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
     const [clearOnNextKey, setClearOnNextKey] = useState(false);
     const inputRef = useRef(null);
 
-    const handleConfirmEdit = () => {
+    function handleConfirmEdit() {
         setKeyCombination(''); // 清空
+
     };
 
     // 退出编辑模式保持原有设置
-    const handleCancelEdit = () => {
+    function handleCancelEdit() {
         setKeyCombination('');
     };
 
-    const [selectedLeftHandGesture, setSelectedLeftHandGesture] = useState<number>();
-    const [selectedRightHandGesture, setSelectedRightHandGesture] = useState<number>();
+    // 手势绑定
+    const [selectedLeftHandIndex, setSelectedLeftHandIndex] = useState<number>();
+    const [selectedRightHandIndex, setSelectedRightHandIndex] = useState<number>();
+    const [selectedLeftHandName, setSelectedLeftHandName] = useState<string | undefined>();
+    const [selectedRightHandName, setSelectedRightHandName] = useState<string | undefined>();
+
+    // 提取图片文件名中对应的手势
+    function extractGestureName(gestureName: string) {
+        // 例 Close_Fist_Left 只提取 Close_Fist
+        const nameParts = gestureName.split('_');
+        if (nameParts.length >= 2) {
+            return nameParts[0] + '_' + nameParts[1];
+        }
+    }
 
     // 左手手势选择
-    const handleLeftHandGestureSelect = (gesture: number) => {
-        setSelectedLeftHandGesture(selectedLeftHandGesture === gesture ? undefined : gesture);
+    function handleLeftHandSelect(gestureIndex: number) {
+        const gestureName = extractGestureName(imagePaths.left[gestureIndex]);
+        console.log(gestureName);
+        setSelectedLeftHandName(gestureName);
+        setSelectedLeftHandIndex(selectedLeftHandIndex === gestureIndex ? undefined : gestureIndex);
     };
 
     // 右手手势选择
-    const handleRightHandGestureSelect = (gesture: number) => {
-        setSelectedRightHandGesture(selectedRightHandGesture === gesture ? undefined : gesture);
+    function handleRightHandSelect(gestureIndex: number) {
+        const gestureName = extractGestureName(imagePaths.right[gestureIndex]);
+        console.log(gestureName);
+        setSelectedRightHandName(gestureName);
+        setSelectedRightHandIndex(selectedRightHandIndex === gestureIndex ? undefined : gestureIndex);
     };
+
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -62,7 +82,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
             }
         };
 
-        const handleKeyUp = () => {
+        function handleKeyUp() {
             if (document.activeElement === inputRef.current) {
                 setClearOnNextKey(true);
             }
@@ -116,12 +136,12 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                 <div className="flex flex-wrap justify-center gap-10">
                     {imagePaths.left.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
-                            <img src={img} className="w-24 h-24 object-cover" />
+                            <img src={`/images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
                                 name="leftHandGesture"
-                                checked={selectedLeftHandGesture === index}
-                                onChange={() => handleLeftHandGestureSelect(index)}
+                                checked={selectedLeftHandIndex === index}
+                                onChange={() => handleLeftHandSelect(index)}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
@@ -133,12 +153,13 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                 <div className="flex flex-wrap justify-center gap-10">
                     {imagePaths.right.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
-                            <img src={img} className="w-24 h-24 object-cover" />
+                            <img src={`/images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
+                                alt={img}
                                 name="rightHandGesture"
-                                checked={selectedRightHandGesture === index}
-                                onChange={() => handleRightHandGestureSelect(index)}
+                                checked={selectedRightHandIndex === index}
+                                onChange={() => handleRightHandSelect(index)}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
