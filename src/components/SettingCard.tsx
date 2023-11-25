@@ -33,7 +33,7 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut, leftHand, rightHand,
 
     return (
         <>
-            <div className="flex flex-col p-6 pb-3 bg-white rounded-lg shadow-md w-[calc(50%-1rem)] relative">
+            <div className="flex flex-col p-6 pb-1 bg-white rounded-lg shadow-md w-[calc(50%-1rem)] relative">
                 <div className="h-12 bg-teal-500 text-white text-center rounded-lg mb-2 font-bold flex flex-col justify-center items-center">
                     {!showDeleteConfirm ?
                         <>
@@ -72,13 +72,13 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut, leftHand, rightHand,
                         {leftHand ? (
                             <img src={`/images/hands/${leftHand}_Left.png`} className="w-32 h-32 object-cover mr-2" />
                         ) : (
-                            <div className="w-32 h-32 border-dashed border-2 border-teal-600 mr-1" />
+                            <div className="w-24 h-24 border-dashed border-2 border-teal-600 mr-8" />
                         )}
 
                         {rightHand ? (
                             <img src={`/images/hands/${rightHand}_Right.png`} className="w-32 h-32 object-cover ml-1" />
                         ) : (
-                            <div className="w-32 h-32 border-dashed border-2 border-teal-600 ml-2" />
+                            <div className="w-24 h-24 border-dashed border-2 border-teal-600 ml-8" />
                         )}
                     </div>
                 </div>

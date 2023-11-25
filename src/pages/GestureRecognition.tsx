@@ -4,18 +4,28 @@ import { Category, FilesetResolver, GestureRecognizer, GestureRecognizerResult, 
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Webcam from 'react-webcam';
-import Loading from "../components/Loading";
-import useFetchConfig from '../hooks/useFetchConfig';
 import { AppConfig } from '../stores/configSlice';
-import { RootState } from '../stores/store';
+import { RootState } from '../types/redux';
+
+const Loading: React.FC = () => {
+    return (
+        <>
+            <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center">
+                <div className="relative h-56 w-56">
+                    <div className="absolute ease-linear rounded-full border-8 border-t-teal-500 h-56 w-56 animate-spin"></div>
+                    <div className="absolute inset-0 flex justify-center items-center text-xl font-bold text-white">            
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
 
 const GestureRecognition: React.FC = () => {
 
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // 两个窗口的redux实例不同，需要再次调用
-    useFetchConfig();
     const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
     // 模型加载状态

@@ -6,9 +6,11 @@ import SettingModal from '../components/SettingModal';
 import { ArrowSmallLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useSelector } from 'react-redux';
 import SettingCard from '../components/SettingCard';
-import { RootState } from '../stores/store';
+import { AppConfig } from '../stores/configSlice';
+import { RootState } from '../types/redux';
 
 const GlobalSetting: React.FC = () => {
+    {/* 暂不开放修改权限 */ }
     return (
         <>
             <SettingCard shortcut="Mouse Wheel" leftHand='Pointing_Up' disable />
@@ -26,7 +28,7 @@ const SettingPage: React.FC = () => {
     const [isModalVisible, setModalVisible] = useState(false);
 
     const UserSetting: React.FC = () => {
-        const appConfigs = useSelector((state: RootState) => state.config.apps);
+        const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
         const currentConfig = appConfigs.find(appConfig => appConfig.name === software);
 
         if (currentConfig) {
@@ -68,7 +70,6 @@ const SettingPage: React.FC = () => {
                 <div className="flex flex-wrap justify-start gap-8 max-w-6xl p-12 pt-6">
                     {software === 'Global' ?
                         <>
-                            {/* 暂不开放修改权限 */}
                             <GlobalSetting />
                         </>
                         :

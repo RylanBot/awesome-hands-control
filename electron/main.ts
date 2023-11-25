@@ -230,20 +230,19 @@ const store = new Store({
   name: 'awesome-hands-config',
   fileExtension: 'json',
 });
-
 const localConfigs = store.get('apps');
 
-function getIconBase64(exePath) {
+// 获取软件的图标
+async function getIconBase64(exePath) {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(process.env.VITE_PUBLIC!, '/scripts/getSoftwareIcon.ps1');
-    const command = `powershell.exe -Command "${scriptPath}" -exePath "${exePath}"`;
-    // exec是异步执行(避免接受到是 undefined)
+    const command = `powershell.exe -Command "${scriptPath} -exePath '${exePath}'"`;
     exec(command, (err, stdout, stderr) => {
       if (err) {
-        console.error(err);
         reject(err);
         return;
       }
+      console.log(stderr);
       resolve(stdout.trim());
     });
   });
@@ -269,13 +268,6 @@ ipcMain.handle('initialConfig', async (_, windowName) => {
 ipcMain.handle('updateAppConfig', async (_, appPath) => {
   // 获取不包含路径和扩展名的文件名
   const appName = path.parse(appPath).name;
-
-  // 检查是否有重复的名称
-  const isDuplicateName = localConfigs.some((appConfig) => appConfig.name === appName);
-  if (isDuplicateName) {
-    // 重复添加
-    return false;
-  }
 
   try {
     const iconBase64 = await getIconBase64(appPath);
@@ -328,16 +320,20 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
   }
 })
 
+// 模拟键盘输入
 const robot = require('robotjs');
+ipcMain.on('triggerShortcut', (_, shortcut) => {
+  const keys = shortcut.split('+');
+  const keyToTap = keys.pop();
+  const modifiers = keys;
+  if (keyToTap) {
+    robot.keyTap(keyToTap, modifiers);
+  }
+});
 
 // exec 通过启动一个 shell 执行命令；spawn 启动一个新进程，在 node 环境直接执行一个命令
 const { exec, spawn } = require('child_process');
-
-// >> 进程判断
-ipcMain.on('triggerShortcut', (event, shortcut) => {
-  robot.keyTap(shortcut);
-});
-
+// 进程判断
 let windowMonitor;
 function runWindowMonitor() {
   if (VITE_DEV_SERVER_URL) {
