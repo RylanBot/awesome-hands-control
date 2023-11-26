@@ -14,7 +14,7 @@ const MainWindowBar: React.FC = () => {
             {/* 最小化到任务栏 */}
             <button
                 className="btn-no-drag mr-5"
-                onClick={() => window.windowApi.minimizeToTaskbar()}
+                onClick={() => window.windowApi.minimizeToTaskbar(windowName)}
             >
                 <MinusIcon className='h-5 w-5 text-emerald-800' />
             </button>
@@ -64,7 +64,8 @@ const CameraWindowBar: React.FC = () => {
             {/* 最小化到托盘 */}
             <button
                 className="btn-no-drag mr-5"
-                onClick={() => window.windowApi.minimizeToTray()}
+                // onClick={() => window.windowApi.minimizeToTray()}
+                onClick={() => window.windowApi.minimizeToTaskbar(windowName)}
             >
                 <MinusIcon className='h-5 w-5 text-white' />
 

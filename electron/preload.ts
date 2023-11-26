@@ -132,7 +132,7 @@ contextBridge.exposeInMainWorld('windowApi', {
   close: (windowName) => ipcRenderer.send('close', windowName),
   // 主窗口
   openCamera: () => ipcRenderer.send('openCamera'),
-  minimizeToTaskbar: () => ipcRenderer.send('minimizeToTaskbar'),
+  minimizeToTaskbar: (windowName) => ipcRenderer.send('minimizeToTaskbar', windowName),
   // 摄像机窗口
   minimizeToTray: () => ipcRenderer.send('minimizeToTray'),
   minimizeToCorner: () => ipcRenderer.send('minimizeToCorner'),

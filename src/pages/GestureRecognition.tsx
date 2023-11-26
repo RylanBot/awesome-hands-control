@@ -13,7 +13,7 @@ const Loading: React.FC = () => {
             <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center">
                 <div className="relative h-56 w-56">
                     <div className="absolute ease-linear rounded-full border-8 border-t-teal-500 h-56 w-56 animate-spin"></div>
-                    <div className="absolute inset-0 flex justify-center items-center text-xl font-bold text-white">            
+                    <div className="absolute inset-0 flex justify-center items-center text-xl font-bold text-white">
                     </div>
                 </div>
             </div>
@@ -26,6 +26,7 @@ const GestureRecognition: React.FC = () => {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
+    // ✨ 两个窗口的 redux 不是同一个实例，更新配置后需要重启摄像机
     const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
     // 模型加载状态
@@ -114,6 +115,7 @@ const GestureRecognition: React.FC = () => {
         const currentShortcut = findShortcut();
         const now = Date.now();
         // 防抖
+        // todo 支持用户自定义延迟时间
         if (currentShortcut && (now - lastTriggerRef.current.timestamp > 1000 || lastTriggerRef.current.shortcut !== currentShortcut)) {
             window.controlApi.triggerShortcut(currentShortcut);
             lastTriggerRef.current = { shortcut: currentShortcut, timestamp: now };
@@ -236,12 +238,11 @@ const GestureRecognition: React.FC = () => {
     };
 
     function findShortcut() {
-        const currentProcess: string = currentProcessRef.current.replace(/\r\n$/, '');;
-        const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === currentProcess);
+        // 去除输出含有的换行符
+        const currentProcess: string = currentProcessRef.current.replace(/\r\n$/, '');
 
-        if (currentConfig) {
-            const shortcuts = currentConfig.shortcut;
-
+        const findShortcutInConfig = (config: AppConfig) => {
+            const shortcuts = config.shortcut;
             for (const shortcutName in shortcuts) {
                 if (shortcuts.hasOwnProperty(shortcutName)) {
                     const shortcut = shortcuts[shortcutName];
@@ -250,14 +251,27 @@ const GestureRecognition: React.FC = () => {
                     }
                 }
             }
+            return null;
+        };
+
+        // 优先当前所在进程是否绑定了操作
+        const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === currentProcess);
+        if (currentConfig) {
+            return findShortcutInConfig(currentConfig);
+        }
+
+        // 没有再在寻找全局设置里寻找
+        const globalConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === 'Global');
+        if (globalConfig) {
+            return findShortcutInConfig(globalConfig);
         }
 
         return null;
-    };
+    }
 
     return (
         <>
-            {isModelLoaded ? null : <Loading />}
+            {!isModelLoaded && <Loading />}
 
             {/* 相机部分 */}
             <div className="relative flex justify-center items-center h-screen w-screen">
@@ -301,4 +315,3 @@ const GestureRecognition: React.FC = () => {
 }
 
 export default GestureRecognition;
-

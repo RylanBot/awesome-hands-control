@@ -79,13 +79,20 @@ const Dashboard: React.FC = () => {
                     <GlobalSoftwareCard />
 
                     {/* 用户自定义 */}
-                    {appsConfigs.map((appConfig, index) => (
-                        <SoftwareCard
-                            key={index}
-                            icon={appConfig.icon}
-                            name={appConfig.name}
-                        />
-                    ))}
+                    {appsConfigs.map((appConfig, index) => {
+                        // 排除name等于"Global"的项
+                        if (appConfig.name === "Global") {
+                            return null;
+                        }
+
+                        return (
+                            <SoftwareCard
+                                key={index}
+                                icon={appConfig.icon}
+                                name={appConfig.name}
+                            />
+                        );
+                    })}
 
                     {/* 新增软件 */}
                     < div

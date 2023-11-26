@@ -68,24 +68,18 @@ const SettingPage: React.FC = () => {
                 </p>
 
                 <div className="flex flex-wrap justify-start gap-8 max-w-6xl p-12 pt-6">
-                    {software === 'Global' ?
-                        <>
-                            <GlobalSetting />
-                        </>
-                        :
-                        <>
-                            <UserSetting />
-                            {/* 添加新手势按钮 */}
-                            <button
-                                onClick={() => setModalVisible(true)}
-                                className="fixed bottom-4 right-4 rounded-full w-12 h-12 p-2 bg-teal-400 text-white hover:bg-teal-600 shadow-md"
-                            >
-                                <PlusIcon />
-                            </button>
-                        </>
-                    }
+                    {/* 不直接将部分配置写入本地文件，避免用户误删 */}
+                    {software === 'Global' &&  <GlobalSetting /> }
+                    <UserSetting />
                 </div>
 
+                {/* 添加新手势按钮 */}
+                <button
+                    onClick={() => setModalVisible(true)}
+                    className="fixed bottom-4 right-4 rounded-full w-12 h-12 p-2 bg-teal-400 text-white hover:bg-teal-600 shadow-md"
+                >
+                    <PlusIcon />
+                </button>
                 <SettingModal isVisible={isModalVisible} onClose={() => setModalVisible(false)} />
             </div>
         </>

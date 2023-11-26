@@ -34,20 +34,19 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut, leftHand, rightHand,
     return (
         <>
             <div className="flex flex-col p-6 pb-1 bg-white rounded-lg shadow-md w-[calc(50%-1rem)] relative">
-                <div className="h-12 bg-teal-500 text-white text-center rounded-lg mb-2 font-bold flex flex-col justify-center items-center">
+                <div className={`h-12 text-white text-center rounded-lg mb-2 font-bold flex flex-col justify-center items-center ${!disable ? 'bg-teal-500' : 'bg-green-500'}`}>
                     {!showDeleteConfirm ?
                         <>
                             {/* 快捷键 */}
                             <span>{shortcut}</span>
                             {/* 删除按钮 */}
-                            {!disable ? (
+                            {!disable &&
                                 <div className="absolute top-9 right-10">
                                     <button onClick={toggleDeleteConfirm}>
                                         <TrashIcon className="h-6 w-6 text-zinc-50 hover:text-zinc-800" />
                                     </button>
                                 </div>
-                            ) : <></>}
-
+                            }
                         </> :
                         <>
                             {/* 确认删除 */}

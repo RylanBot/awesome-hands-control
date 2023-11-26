@@ -10,9 +10,9 @@ declare global {
 }
 interface WindowApi {
     close: (windowName: string) => void;
+    minimizeToTaskbar: (windowName: string) => void;
     // 主窗口
     openCamera: () => void;
-    minimizeToTaskbar: () => void;
     // 摄像机窗口
     minimizeToTray: () => void;
     minimizeToCorner: () => void;

@@ -1,3 +1,4 @@
+import { AppConfig } from './../src/stores/configSlice';
 /* 主进程文件，负责与操作系统的交互。 */
 
 import { app, BrowserWindow, ipcMain, screen, Tray } from 'electron';
@@ -64,7 +65,7 @@ function createCameraWindow() {
     frame: false,
     width: 850,
     height: 600,
-    skipTaskbar: true, // 不在任务栏显示
+    // skipTaskbar: true, // 不在任务栏显示
     resizable: false,
   });
 
@@ -96,6 +97,7 @@ function createCameraWindow() {
   });
 }
 
+// todo 有时候似乎销毁不干净
 let tray: Tray | null
 function createCameraTray() {
   const trayIcon = path.join(process.env.VITE_PUBLIC! as string, '/images/icons/camera.png');
@@ -144,7 +146,7 @@ app.whenReady().then(createMainWindow)
 // 类似后端的 Service 层
 
 // 关闭窗口
-ipcMain.on('close', (event, windowName) => {
+ipcMain.on('close', (_, windowName) => {
   if (windowName === 'main') {
     app.quit();
     mainWindow = null
@@ -155,6 +157,16 @@ ipcMain.on('close', (event, windowName) => {
     cameraWindow.close();
     cameraWindow = null;
     tray?.destroy();
+  }
+});
+
+ipcMain.on('minimizeToTaskbar', (_, windowName) => {
+  if (windowName === 'main') {
+    mainWindow?.minimize();
+  }
+
+  if (windowName === 'camera' && cameraWindow) {
+    cameraWindow.minimize();
   }
 });
 
@@ -171,11 +183,7 @@ ipcMain.on('openCamera', () => {
   }
 
   createCameraWindow();
-  createCameraTray();
-});
-
-ipcMain.on('minimizeToTaskbar', () => {
-  mainWindow?.minimize();
+  // createCameraTray();
 });
 
 // >> 摄像机窗口
@@ -252,8 +260,14 @@ async function getIconBase64(exePath) {
 ipcMain.handle('initialConfig', async (_, windowName) => {
   const fs = require('fs');
   if (!fs.existsSync(store.path)) {
-    const defaultConfig = []
+    const defaultConfig: AppConfig[] = []
     try {
+      const globalSetting: AppConfig = {
+        name: 'Global',
+        icon: "",
+        shortcut: {}
+      };
+      defaultConfig.push(globalSetting)
       store.set('apps', defaultConfig);
       return defaultConfig;
     } catch (err) {
@@ -322,12 +336,26 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 
 // 模拟键盘输入
 const robot = require('robotjs');
+
 ipcMain.on('triggerShortcut', (_, shortcut) => {
-  const keys = shortcut.split('+');
-  const keyToTap = keys.pop();
-  const modifiers = keys;
-  if (keyToTap) {
-    robot.keyTap(keyToTap, modifiers);
+  // 检测是否为鼠标操作
+  if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
+    const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
+    const mouseButton = mouseButtonMatch[1]
+    const isDoubleClick = shortcut.includes('Mouse Double Click');
+    robot.mouseClick(mouseButton, isDoubleClick);
+  } else {
+    // 处理键盘快捷键
+    const keys = shortcut.split('+');
+    const validModifiers = ['alt', 'command', 'control', 'shift', 'win'];
+    const modifiers = keys.filter(key => validModifiers.includes(key));
+    const nonModifierKeys = keys.filter(key => !validModifiers.includes(key));
+    nonModifierKeys.forEach((key, index) => {
+      robot.keyToggle(key, 'down', modifiers);
+      if (index === nonModifierKeys.length - 1) {
+        nonModifierKeys.forEach(key => robot.keyToggle(key, 'up', modifiers));
+      }
+    });
   }
 });
 
