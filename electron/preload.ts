@@ -167,6 +167,7 @@ contextBridge.exposeInMainWorld('controlApi', {
   }
   ),
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },
+  triggerMouse: (delta, isLeftHand) => { ipcRenderer.send('triggerMouse', delta, isLeftHand); },
 });
 
 

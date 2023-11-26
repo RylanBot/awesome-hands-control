@@ -33,13 +33,16 @@ const GestureRecognition: React.FC = () => {
     const [isModelLoaded, setIsModelLoaded] = useState(false);
 
     // 左右手对应姿势
-    const [gestures, setGestures] = useState({ left: "", right: "" });
+    const [detectedGestures, setDetectedGestures] = useState({ left: "", right: "" });
     const setGesture = (isLeftHand: boolean, text: string) => {
-        setGestures(prev => ({
+        setDetectedGestures(prev => ({
             ...prev,
             [isLeftHand ? 'left' : 'right']: text,
         }));
     };
+
+    // 新旧食指指尖距离记录
+    const lastFingerTipRef = useRef<{ x: number, y: number } | null>(null);
 
     // 核心步骤：读取模型 👋
     useEffect(() => {
@@ -120,7 +123,9 @@ const GestureRecognition: React.FC = () => {
             window.controlApi.triggerShortcut(currentShortcut);
             lastTriggerRef.current = { shortcut: currentShortcut, timestamp: now };
         }
-    }, [gestures]);
+
+
+    }, [detectedGestures]);
 
 
     function onResult(result: GestureRecognizerResult) {
@@ -136,18 +141,26 @@ const GestureRecognition: React.FC = () => {
 
             // 清除之前的绘制
             canvasCtx?.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            setDetectedGestures({ left: "", right: "" });
 
-            const { gestures: detectedGestures, handedness } = result;
-            setGestures({ left: "", right: "" });
+            // gestures[0] 左手；gestures[1]右手
+            // gesture[0] -> 相当于 gestures[0][0] 和 gestures[0][1]，对应 Category 类型
+            // 同理 landmarks[0][index] 和 landmarks[0][index] -> index 对应21个不同关节
+            const { landmarks, handedness, gestures } = result;
 
-            detectedGestures.forEach((gesture, index) => {
+            gestures.forEach((gesture, index) => {
                 const isLeftHand = handedness[index] && handedness[index][0].categoryName === "Left";
 
                 if (canvasCtx) {
-                    drawHand(result.landmarks[index], canvasCtx, isLeftHand)
+                    drawHand(landmarks[index], canvasCtx, isLeftHand)
                 };
 
                 displayGesture(gesture[0], isLeftHand);
+
+                // 单独处理指定手势
+                if (gesture[0].categoryName == 'Pointing_Up') {
+                    processCoordinates(landmarks[index], isLeftHand)
+                }
 
             });
         };
@@ -234,7 +247,6 @@ const GestureRecognition: React.FC = () => {
         // const displayText = categoryName === 'None' ? "" : `${categoryName} (${(score * 100).toFixed(1)}%)`;
         const displayText = categoryName === 'None' ? "" : categoryName;
         setGesture(isLeftHand, displayText);
-
     };
 
     function findShortcut() {
@@ -246,7 +258,7 @@ const GestureRecognition: React.FC = () => {
             for (const shortcutName in shortcuts) {
                 if (shortcuts.hasOwnProperty(shortcutName)) {
                     const shortcut = shortcuts[shortcutName];
-                    if (shortcut[0] === gestures.left && shortcut[1] === gestures.right) {
+                    if (shortcut[0] === detectedGestures.left && shortcut[1] === detectedGestures.right) {
                         return shortcutName;
                     }
                 }
@@ -267,6 +279,39 @@ const GestureRecognition: React.FC = () => {
         }
 
         return null;
+    }
+
+    function processCoordinates(handLandmarks: Landmark[], isLeftHand: boolean) {
+        // 向右 x 变小，向上 y 变小
+        const fingerTip = {
+            x: handLandmarks[8].x,
+            y: handLandmarks[8].y,
+        }
+
+        if (lastFingerTipRef.current) {
+            const deltaX = fingerTip.x - lastFingerTipRef.current.x;
+            const deltaY = fingerTip.y - lastFingerTipRef.current.y;
+
+            // 相减后差值大于正负 0.01 才考虑触发移动
+            const debounceThreshold = 0.01;
+            if (Math.abs(deltaX) > debounceThreshold || Math.abs(deltaY) > debounceThreshold) {
+                // 放大倍数（在屏幕上移动的像素)，比如 0.02 相当于移动 20px
+                const scaleFactor = 1000;
+
+                let deltaCoordinates = { x: 0, y: 0 };
+                // 选择移动幅度更大的方向（同时传xy，变为斜着移，不太准）
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    deltaCoordinates.x = -deltaX * scaleFactor;
+                } else {
+                    deltaCoordinates.y = deltaY * scaleFactor;
+                }
+
+                window.controlApi.triggerMouse(deltaCoordinates, isLeftHand);
+            }
+        }
+
+        // 更新f以便下一次计算
+        lastFingerTipRef.current = fingerTip;
     }
 
     return (
@@ -297,15 +342,15 @@ const GestureRecognition: React.FC = () => {
 
             {/* 输出的识别手势标签 */}
             <div className='absolute top-0 w-screen px-4 py-2 mt-8'>
-                {gestures.left && (
+                {detectedGestures.left && (
                     <div className="float-left bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
-                        {gestures.left}
+                        {detectedGestures.left}
                     </div>
                 )}
 
-                {gestures.right && (
+                {detectedGestures.right && (
                     <div className="float-right bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
-                        {gestures.right}
+                        {detectedGestures.right}
                     </div>
                 )}
             </div>

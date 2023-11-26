@@ -30,6 +30,7 @@ interface configApi {
 interface ControlApi {
     transmitProcess: (callback: (result: string) => void) => any;
     triggerShortcut: (shortcut: string) => void;
+    triggerMouse: (deltaCoordinates, isLeftHand) => void
 }
 
 export { };

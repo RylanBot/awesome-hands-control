@@ -336,9 +336,10 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 
 // 模拟键盘输入
 const robot = require('robotjs');
+// import robot from 'robotjs'
 
 ipcMain.on('triggerShortcut', (_, shortcut) => {
-  // 检测是否为鼠标操作
+  // 检测是否为鼠标操作  
   if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
     const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
     const mouseButton = mouseButtonMatch[1]
@@ -358,6 +359,25 @@ ipcMain.on('triggerShortcut', (_, shortcut) => {
     });
   }
 });
+
+//处理鼠标移动
+ipcMain.on('triggerMouse', (_, delta, isLeftHand) => {
+  let mouse = robot.getMousePos();
+  // console.log("Mouse is at x:" + mouse.x + " y:" + mouse.y);
+
+  if (isLeftHand) {
+    // 左手触发滚轮
+    // win10 没反应（官方还没修复，则暂时弃用）
+    // robot.scrollMouse(delta.x, delta.y);
+    // setTimeout(function () {
+    //   robot.scrollMouse(delta.x, delta.y);
+    // }, 2000);
+  } else {
+    // 右手触发鼠标光标
+    robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
+  }
+
+})
 
 // exec 通过启动一个 shell 执行命令；spawn 启动一个新进程，在 node 环境直接执行一个命令
 const { exec, spawn } = require('child_process');
