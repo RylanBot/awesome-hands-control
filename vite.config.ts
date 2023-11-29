@@ -22,4 +22,11 @@ export default defineConfig({
       renderer: {},
     }),
   ],
+  // 添加以下内容防止打包后部分库出错（...is not a constructor）
+  build: {
+    commonjsOptions: { include: [] },
+  },
+  optimizeDeps: {
+    disabled: false,
+  }
 })

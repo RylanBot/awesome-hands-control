@@ -1,11 +1,12 @@
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { CameraWindowBar, MainWindowBar } from "./components/WindowBar";
 import Dashboard from "./pages/Dashboard";
+import EmptySlot from "./pages/EmptySlot";
 import GestureRecognition from "./pages/GestureRecognition";
 import SettingPage from "./pages/SettingPage";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
 import { getLocalConfig } from "./stores/configSlice";
 
 const MainLayout = () => {
@@ -30,25 +31,29 @@ const App = () => {
 
   // 初始化 redux 后才能保证中间件进行监听
   const dispatch = useDispatch();
-    useEffect(() => {
-        async function initializeConfig() {
-            try {
-                const config = await window.configApi.initialConfig();
-                dispatch(getLocalConfig(config));
-            } catch (error) {
-                console.error('Failed to initialize config: ', error);
-            }
-        }
-        initializeConfig();
-    }, [dispatch]);
+  useEffect(() => {
+    async function initializeConfig() {
+      try {
+        const config = await window.configApi.initialConfig();
+        dispatch(getLocalConfig(config));
+      } catch (error) {
+        console.error('Failed to initialize config: ', error);
+      }
+    }
+    initializeConfig();
+  }, [dispatch]);
 
   const routes = [
-    // 主窗口
     {
       path: "/",
+      element: <EmptySlot />,
+    },
+    // 主窗口
+    {
+      path: "/main",
       element: <MainLayout />,
       children: [
-        { index: true, element: <Dashboard /> }, // 根路径
+        { index: true, element: <Dashboard /> },
         {
           path: 'setting',
           element: <SettingPage />,
@@ -67,7 +72,7 @@ const App = () => {
     }
   ];
 
-  return <RouterProvider router={createBrowserRouter(routes)} />;
+  return <RouterProvider router={createHashRouter(routes)} />;
 };
 
 export default App;

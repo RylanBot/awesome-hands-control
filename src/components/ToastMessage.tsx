@@ -26,7 +26,7 @@ const ToastMessage: React.FC<MessageProps> = ({ message }) => {
 
     return (
         <div
-            className={`fixed top-4 left-1/2 transform -translate-x-1/2 translate-x-2.75rem bg-red-500 text-white py-2 px-4 rounded shadow-xl transition-opacity duration-300 ${toastClasses}`}
+            className={`fixed top-4 left-1/2 bg-red-500 text-white py-2 px-4 rounded shadow-xl transition-opacity duration-300 ${toastClasses}`}
             style={{ transform: "translateX(-50%) translateX(2.75rem)" }}
         >
             {message}

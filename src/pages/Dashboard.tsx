@@ -96,7 +96,7 @@ const Dashboard: React.FC = () => {
 
                     {/* 新增软件 */}
                     < div
-                        className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative cursor-pointer hover:shadow-lg transition-shadow"
+                        className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-shadow"
                         onClick={handleAddSoftwareClick} >
                         {!loading ?
                             <>

@@ -69,13 +69,13 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut, leftHand, rightHand,
                     {/* 对应手势 */}
                     <div className="flex items-center p-2">
                         {leftHand ? (
-                            <img src={`/images/hands/${leftHand}_Left.png`} className="w-32 h-32 object-cover mr-2" />
+                            <img src={`./images/hands/${leftHand}_Left.png`} className="w-32 h-32 object-cover mr-2" />
                         ) : (
                             <div className="w-24 h-24 border-dashed border-2 border-teal-600 mr-8" />
                         )}
 
                         {rightHand ? (
-                            <img src={`/images/hands/${rightHand}_Right.png`} className="w-32 h-32 object-cover ml-1" />
+                            <img src={`./images/hands/${rightHand}_Right.png`} className="w-32 h-32 object-cover ml-1" />
                         ) : (
                             <div className="w-24 h-24 border-dashed border-2 border-teal-600 ml-8" />
                         )}

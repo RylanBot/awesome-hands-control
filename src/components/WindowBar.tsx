@@ -61,14 +61,13 @@ const CameraWindowBar: React.FC = () => {
                 )}
             </button>
 
-            {/* 最小化到托盘 */}
+            {/* 最小化后相机仍然开着，但窗口的代码不再被调用，无法识别 */}
             <button
                 className="btn-no-drag mr-5"
                 // onClick={() => window.windowApi.minimizeToTray()}
                 onClick={() => window.windowApi.minimizeToTaskbar(windowName)}
             >
                 <MinusIcon className='h-5 w-5 text-white' />
-
             </button>
 
             {/* 关闭窗口 */}

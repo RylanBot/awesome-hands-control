@@ -137,6 +137,12 @@ contextBridge.exposeInMainWorld('windowApi', {
   minimizeToTray: () => ipcRenderer.send('minimizeToTray'),
   minimizeToCorner: () => ipcRenderer.send('minimizeToCorner'),
   resetCameraWindow: () => ipcRenderer.send('resetCameraWindow'),
+  // 判断当前窗口
+  identifyWindow: (callback) => ipcRenderer.on('identifyWindow', (_, windowName) => {
+    callback(windowName)
+  }),
+  // 打开外部链接
+  openExternalLink: (url) => ipcRenderer.send('openExternalLink', url),
 });
 
 

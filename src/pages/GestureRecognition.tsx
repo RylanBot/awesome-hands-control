@@ -53,7 +53,7 @@ const GestureRecognition: React.FC = () => {
 
             const gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
                 baseOptions: {
-                    modelAssetPath: "/models/gesture_recognizer.task",
+                    modelAssetPath: "./models/gesture_recognizer.task",
                 },
                 runningMode: 'IMAGE',
                 numHands: 2,

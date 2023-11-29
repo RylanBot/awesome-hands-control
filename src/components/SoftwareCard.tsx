@@ -29,15 +29,15 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
     };
 
     return (
-        <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative">
+        <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center">
 
             {/* 删除按钮 */}
             <button onClick={handleDeleteClick}>
-                <TrashIcon className="h-6 w-6 text-gray-500 hover:text-red-500 absolute top-2 right-2" />
+                <TrashIcon className="h-6 w-6 text-gray-500 hover:text-red-500 fixed top-16 ml-14" />
             </button>
             {/* 删除确认对话框 */}
             {showDeleteConfirm && (
-                <div className="absolute top-0 w-48 bg-white p-4 border border-gray-200 rounded-lg shadow-lg text-xs font-bold">
+                <div className="absolute top-12 w-48 bg-white p-4 border border-gray-200 rounded-lg shadow-lg text-xs font-bold">
                     <div className="flex justify-center">
                         <button onClick={handleConfirmDelete}
                             className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2 hover:bg-red-600"
@@ -73,11 +73,11 @@ const GlobalSoftwareCard: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center relative">
+        <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center">
 
             <div className="flex flex-col items-center mt-4">
                 <img
-                    src={"/images/icons/GlobalSetting.png"}
+                    src={"./images/icons/GlobalSetting.png"}
                     onClick={() => { navigate("setting/Global"); }}
                     className="w-14 h-14 cursor-pointer hover:cursor-pointer"
                 />

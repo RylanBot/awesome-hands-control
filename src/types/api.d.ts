@@ -1,4 +1,4 @@
-
+/* 对应 preload 暴露给渲染层的接口 */
 
 declare global {
     // 主进程的相关接口
@@ -17,6 +17,10 @@ interface WindowApi {
     minimizeToTray: () => void;
     minimizeToCorner: () => void;
     resetCameraWindow: () => void
+    // 判断窗口
+    identifyWindow: (callback: (windowName: string) => void) => any;
+    // 打开外部链接
+    openExternalLink: (url: string) => void;
 }
 
 interface configApi {
@@ -30,7 +34,7 @@ interface configApi {
 interface ControlApi {
     transmitProcess: (callback: (result: string) => void) => any;
     triggerShortcut: (shortcut: string) => void;
-    triggerMouse: (deltaCoordinates, isLeftHand) => void
+    triggerMouse: (deltaCoordinates: { x: number, y: number }, isLeftHand: boolean) => void
 }
 
 export { };

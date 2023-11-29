@@ -126,6 +126,11 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
             setInputError('Input cannot be empty');
             return;
         }
+        if (selectedLeftHandName === '' && selectedRightHandName === '') {
+            setInputError('Choose at least one gesture');
+            return;
+        }
+
         // 检查是否有重复的手势绑定
         const isDuplicateGesture = checkDuplicateSetting()
         if (isDuplicateGesture) {
@@ -144,11 +149,10 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
     // 支持不同手势对应相同的快捷键，但拒绝使用相同的手势
     function checkDuplicateSetting(): boolean {
         const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === software);
-
         if (currentConfig) {
             const shortcuts = currentConfig.shortcut;
-            for (const [[left, right]] of Object.entries(shortcuts)) {
-                if ((left === selectedLeftHandName && right === selectedRightHandName)) {
+            for (const [shortcut, [left, right]] of Object.entries(shortcuts)) {
+                if (shortcut === keyCombination || (left === selectedLeftHandName && right === selectedRightHandName)) {
                     return true;
                 }
             }
@@ -296,7 +300,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                     {inputError && <span className="text-sm font-semibold text-red-500 absolute right-12">{inputError}</span>}
                     {/* 清空输入 */}
                     <span className="absolute right-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-red-200 hover:bg-red-300 shadow-md"
-                        onClick={() => { setKeyCombination('') }}>
+                        onClick={() => { setKeyCombination(''); setInputError('') }}>
                         <XMarkIcon />
                     </span>
 
@@ -352,7 +356,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                 <div className="flex flex-wrap justify-center gap-10">
                     {imagePaths.left.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
-                            <img src={`/images/hands/${img}.png`} className="w-24 h-24 object-cover" />
+                            <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
                                 name="leftHandGesture"
@@ -369,7 +373,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                 <div className="flex flex-wrap justify-center gap-10">
                     {imagePaths.right.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
-                            <img src={`/images/hands/${img}.png`} className="w-24 h-24 object-cover" />
+                            <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
                                 alt={img}
