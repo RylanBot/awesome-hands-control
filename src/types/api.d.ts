@@ -30,6 +30,7 @@ interface configApi {
     updateShortcutConfig: (appName: string, shortcut: string, leftHand: string, rightHand: string) => boolean;
     deleteShortcutConfig: (appName: string, shortcut: string) => boolean;
     getBase64Icon: (appPath: string) => string
+    getProjectVersion: () => string
 }
 
 interface ControlApi {

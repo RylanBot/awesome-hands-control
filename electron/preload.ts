@@ -128,6 +128,10 @@ window.onmessage = ev => {
 // 类似后端的 Controller 层（ 暴露给渲染层的 API）
 // (send) 发送消息到主进程；(on) 监听从主进程发来的消息
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  // appVersion: packageJson.version
+});
+
 contextBridge.exposeInMainWorld('windowApi', {
   close: (windowName) => ipcRenderer.send('close', windowName),
   // 主窗口
@@ -144,7 +148,6 @@ contextBridge.exposeInMainWorld('windowApi', {
   // 打开外部链接
   openExternalLink: (url) => ipcRenderer.send('openExternalLink', url),
 });
-
 
 contextBridge.exposeInMainWorld('configApi', {
   initialConfig: async () => {
@@ -165,8 +168,10 @@ contextBridge.exposeInMainWorld('configApi', {
   getBase64Icon: async (appPath) => {
     return ipcRenderer.invoke('getBase64Icon', appPath);
   },
+  getProjectVersion: () => {
+    return ipcRenderer.invoke('getProjectVersion')
+  }
 });
-
 
 contextBridge.exposeInMainWorld('controlApi', {
   transmitProcess: (callback) => ipcRenderer.on('transmitProcess', (_, processName) => {
@@ -176,6 +181,3 @@ contextBridge.exposeInMainWorld('controlApi', {
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },
   triggerMouse: (delta, isLeftHand) => { ipcRenderer.send('triggerMouse', delta, isLeftHand); },
 });
-
-
-
