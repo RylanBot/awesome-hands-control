@@ -25,10 +25,11 @@ interface WindowApi {
 
 interface configApi {
     initialConfig: () => AppConfig[];
-    updateAppConfig: (appName: string) => boolean;
+    updateAppConfig: (appName: string, base64Icon: string) => boolean;
     deleteAppConfig: (appName: string) => boolean;
     updateShortcutConfig: (appName: string, shortcut: string, leftHand: string, rightHand: string) => boolean;
     deleteShortcutConfig: (appName: string, shortcut: string) => boolean;
+    getBase64Icon: (appPath: string) => string
 }
 
 interface ControlApi {

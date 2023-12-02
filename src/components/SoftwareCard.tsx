@@ -62,7 +62,7 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
                 />
 
                 {/* 软件名字 */}
-                <span className="text-md font-bold text-gray-700 mt-3">{name}</span>
+                <span className="text-md font-bold text-gray-700 mt-3 w-32 truncate text-center">{name}</span>
             </div>
 
         </div>

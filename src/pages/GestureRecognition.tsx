@@ -123,8 +123,7 @@ const GestureRecognition: React.FC = () => {
     }
 
     function findShortcut() {
-        // 去除输出含有的换行符
-        const currentProcess: string = currentProcessRef.current.replace(/\r\n$/, '');
+        const currentProcess: string = currentProcessRef.current;
 
         const findShortcutInConfig = (config: AppConfig) => {
             const shortcuts = config.shortcut;

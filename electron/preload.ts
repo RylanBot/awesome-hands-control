@@ -150,8 +150,8 @@ contextBridge.exposeInMainWorld('configApi', {
   initialConfig: async () => {
     return ipcRenderer.invoke('initialConfig')
   },
-  updateAppConfig: async (appPath) => {
-    return ipcRenderer.invoke('updateAppConfig', appPath);
+  updateAppConfig: async (appPath, base64Icon) => {
+    return ipcRenderer.invoke('updateAppConfig', appPath, base64Icon);
   },
   deleteAppConfig: async (appName) => {
     return ipcRenderer.invoke('deleteAppConfig', appName);
@@ -161,15 +161,16 @@ contextBridge.exposeInMainWorld('configApi', {
   },
   deleteShortcutConfig: async (appName, shortcut) => {
     return ipcRenderer.invoke('deleteShortcutConfig', appName, shortcut);
-  }
+  },
+  getBase64Icon: async (appPath) => {
+    return ipcRenderer.invoke('getBase64Icon', appPath);
+  },
 });
 
 
 contextBridge.exposeInMainWorld('controlApi', {
-  transmitProcess: (callback) => ipcRenderer.on('transmitProcess', (event, processName) => {
-    const decoder = new TextDecoder('utf-8');
-    const processNameString = decoder.decode(processName);
-    callback(processNameString)
+  transmitProcess: (callback) => ipcRenderer.on('transmitProcess', (_, processName) => {
+    callback(processName)
   }
   ),
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },

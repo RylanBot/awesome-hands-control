@@ -10,7 +10,7 @@ const IntroCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <XMarkIcon className="h-5 w-5" />
                 </button>
                 <p className="text-lg font-bold text-teal-800 mt-4 mb-8 font-serif">
-                    Version 1.0.0
+                    Version 1.0.1
                 </p>
                 <div className="flex justify-end items-center">
                     <img src="./images/icons/GitHub.png" className="w-5 h-5 mr-2" />

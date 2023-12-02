@@ -2,17 +2,23 @@ import { AppConfig } from './../src/stores/configSlice';
 /* 主进程文件，负责与操作系统的交互。 */
 
 import { BrowserWindow, Menu, Tray, app, ipcMain, screen, shell } from 'electron';
+import { promises } from 'node:fs';
 import path from 'node:path';
 
 const fs = require('fs');
 const Store = require('electron-store');
-// exec 通过启动一个 shell 执行命令；spawn 启动一个新进程，在 node 环境直接执行一个命令
-const { exec, spawn } = require('child_process');
+const log = require('electron-log');
+const activeWin = require('active-win');
+const icon = require('file-icon-extractor');
 
 // 指向 dist-electron
 process.env.DIST = path.join(__dirname, '../dist')
 // 指向 public
 process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
+
+process.on('uncaughtException', (error) => {
+  log.error('uncaughtException: ', error);
+});
 
 // BrowserWindow 用于创建和管理应用的窗口 
 let mainWindow: BrowserWindow | null
@@ -99,7 +105,7 @@ function createCameraWindow() {
   })
 
   cameraWindow.on('closed', () => {
-    stopWindowMonitor();
+    // stopWindowMonitor();
     cameraWindow = null;
     if (tray) {
       tray.destroy();
@@ -169,7 +175,7 @@ app.whenReady().then(async () => {
     global.config = initialConfig;
     createMainWindow()
   } catch (error) {
-    console.error('Failed to load initial config:', error);
+    log.error("initialConfig: ", error);
   }
 }
 )
@@ -252,70 +258,73 @@ ipcMain.on('minimizeToTray', () => {
 });
 
 ipcMain.on('minimizeToCorner', () => {
-  if (cameraWindow) {
-    const width = 280;
-    const height = 200;
+  try {
+    if (cameraWindow) {
+      const width = 280;
+      const height = 200;
 
-    // 获取鼠标当前的位置
-    const cursorPoint = screen.getCursorScreenPoint();
-    // 获取包含鼠标当前位置的显示器
-    const display = screen.getDisplayNearestPoint(cursorPoint);
+      // 获取鼠标当前的位置
+      const cursorPoint = screen.getCursorScreenPoint();
+      // 获取包含鼠标当前位置的显示器
+      const display = screen.getDisplayNearestPoint(cursorPoint);
 
-    // 把窗口缩小移到角落
-    const x = display.bounds.x + (display.bounds.width - width);
-    const y = display.bounds.y + (display.bounds.height - height);
+      // 把窗口缩小移到角落
+      const x = display.bounds.x + (display.bounds.width - width);
+      const y = display.bounds.y + (display.bounds.height - height);
 
-    cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
-
+      cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
+    }
+  } catch (error) {
+    log.error('minimizeToCorner: ', error);
   }
-
 });
 
+
 ipcMain.on('resetCameraWindow', () => {
-  if (cameraWindow) {
-    const width = 850;
-    const height = 600;
+  try {
+    if (cameraWindow) {
+      const width = 850;
+      const height = 600;
 
-    const cursorPoint = screen.getCursorScreenPoint();
-    const display = screen.getDisplayNearestPoint(cursorPoint);
+      const cursorPoint = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint(cursorPoint);
 
-    // 把窗口恢复居中放大
-    // 直接调用内置 center() 方法时，多个显示器时，无法准确判断
-    const x = display.bounds.x + ((display.bounds.width - width) / 2);
-    const y = display.bounds.y + ((display.bounds.height - height) / 2);
+      // 把窗口恢复居中放大
+      // 直接调用内置 center() 方法时，多个显示器时，无法准确判断
+      const x = display.bounds.x + ((display.bounds.width - width) / 2);
+      const y = display.bounds.y + ((display.bounds.height - height) / 2);
 
-    cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
+      cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
+    }
+  } catch (error) {
+    log.error('resetCameraWindow: ', error);
   }
 });
 
 // 获取软件的图标
 async function getIconBase64(exePath) {
-  return new Promise((resolve, reject) => {
+  const cachePath = app.getPath('temp');
 
-    let scriptPath;
-    if (VITE_DEV_SERVER_URL) {
-      scriptPath = path.join(process.env.VITE_PUBLIC!, 'scripts', 'getSoftwareIcon.ps1');
-    } else {
-      scriptPath = path.join(process.resourcesPath, 'scripts', 'getSoftwareIcon.ps1');
+  const regex = /([^\\]+)\.exe$/i;
+  const matches = exePath.match(regex);
+  const exeName = matches[1];
+  const iconPath = path.join(cachePath, `${exeName}.png`);
+
+  try {
+    icon.extract(exePath, cachePath);
+    while (!fs.existsSync(iconPath)) {
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
-
-    const command = `powershell.exe -Command "& {& '${scriptPath.replace(/\\/g, '\\\\')}' -exePath '${exePath.replace(/\\/g, '\\\\')}'"}`;
-
-    exec(command, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      if (stderr) {
-        reject(new Error(stderr));
-        return;
-      }
-      resolve(stdout.trim());
-    });
-
-  })
+    // 转换为 base64
+    const iconData = fs.readFileSync(iconPath);
+    const iconBase64 = iconData.toString('base64');
+    // 删除缓存图标
+    fs.unlinkSync(iconPath);
+    return iconBase64;
+  } catch (err) {
+    throw err;
+  }
 }
-
 
 // 读取初始化配置
 ipcMain.handle('initialConfig', async () => {
@@ -323,27 +332,19 @@ ipcMain.handle('initialConfig', async () => {
 })
 
 // 添加软件
-ipcMain.handle('updateAppConfig', async (_, appPath) => {
-  const appName = path.parse(appPath).name;
-  let iconBase64;
-  try {
-    iconBase64 = await getIconBase64(appPath);
-  } catch (error) {
-    // 检查错误类型并提取错误消息
-    const message = error instanceof Error ? error.message : '未知错误';
-    console.error(error);
-    return { success: false, message: message };
-  }
-
+ipcMain.handle('updateAppConfig', async (_, appName, base64Icon) => {
   const newApp: AppConfig = {
     name: appName,
-    icon: iconBase64,
+    icon: base64Icon,
     shortcut: {}
   };
-
-  localConfigs.push(newApp);
-  store.set('apps', localConfigs);
-  return { success: true };
+  try {
+    localConfigs.push(newApp);
+    store.set('apps', localConfigs);
+    return true;
+  } catch (error) {
+    log.error(error)
+  }
 });
 
 // 删除软件
@@ -386,24 +387,28 @@ const robot = require('robotjs');
 // import robot from 'robotjs'
 
 ipcMain.on('triggerShortcut', (_, shortcut) => {
-  // 检测是否为鼠标操作  
-  if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
-    const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
-    const mouseButton = mouseButtonMatch[1]
-    const isDoubleClick = shortcut.includes('Mouse Double Click');
-    robot.mouseClick(mouseButton, isDoubleClick);
-  } else {
-    // 处理键盘快捷键
-    const keys = shortcut.split('+');
-    const validModifiers = ['alt', 'command', 'control', 'shift', 'win'];
-    const modifiers = keys.filter(key => validModifiers.includes(key));
-    const nonModifierKeys = keys.filter(key => !validModifiers.includes(key));
-    nonModifierKeys.forEach((key, index) => {
-      robot.keyToggle(key, 'down', modifiers);
-      if (index === nonModifierKeys.length - 1) {
-        nonModifierKeys.forEach(key => robot.keyToggle(key, 'up', modifiers));
-      }
-    });
+  try {
+    // 检测是否为鼠标操作  
+    if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
+      const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
+      const mouseButton = mouseButtonMatch[1]
+      const isDoubleClick = shortcut.includes('Mouse Double Click');
+      robot.mouseClick(mouseButton, isDoubleClick);
+    } else {
+      // 处理键盘快捷键
+      const keys = shortcut.split('+');
+      const validModifiers = ['alt', 'command', 'control', 'shift', 'win'];
+      const modifiers = keys.filter(key => validModifiers.includes(key));
+      const nonModifierKeys = keys.filter(key => !validModifiers.includes(key));
+      nonModifierKeys.forEach((key, index) => {
+        robot.keyToggle(key, 'down', modifiers);
+        if (index === nonModifierKeys.length - 1) {
+          nonModifierKeys.forEach(key => robot.keyToggle(key, 'up', modifiers));
+        }
+      });
+    }
+  } catch (error) {
+    log.error("triggerShortcut", error);
   }
 });
 
@@ -433,31 +438,76 @@ ipcMain.on('openExternalLink', (_, url) => {
 })
 
 // 进程判断
-let windowMonitor;
 function runWindowMonitor() {
+  let lastProcessName = null;
 
-  let monitorPath;
-  if (VITE_DEV_SERVER_URL) {
-    monitorPath = path.join(process.env.VITE_PUBLIC!, 'WindowMonitor', 'WindowMonitor.exe');
-  } else {
-    monitorPath = path.join(process.resourcesPath, 'WindowMonitor', 'WindowMonitor.exe');
-  }
+  setInterval(async () => {
+    try {
+      const windowInfo = await activeWin();
+      const processName = windowInfo.owner.name;
 
-  windowMonitor = spawn(monitorPath);
-
-  windowMonitor.stdout.on('data', (processName) => {
-    if (cameraWindow && !cameraWindow.isDestroyed()) {
-      cameraWindow.webContents.send('transmitProcess', processName);
+      // 只有在进程名称改变时才发送
+      if (processName !== lastProcessName) {
+        if (cameraWindow && !cameraWindow.isDestroyed()) {
+          cameraWindow.webContents.send('transmitProcess', processName);
+        }
+        lastProcessName = processName;
+      }
+    } catch (error) {
+      log.error('runWindowMonitor: ', error);
     }
-  });
-  windowMonitor.on('error', (err) => {
-    console.error(`${err}`);
-  });
+  }, 1000);
 }
 
-function stopWindowMonitor() {
-  if (windowMonitor) {
-    windowMonitor.kill('SIGINT');
-    windowMonitor = null;
+// 提取软件的 icon
+ipcMain.handle('getBase64Icon', async (_, appPath) => {
+
+  let regex, matches, appName;
+  if (appPath.endsWith('.EXE') || appPath.endsWith('.exe')) {
+    // Windows 路径处理
+    regex = /([^\\]+)\.(EXE|exe)$/i;
+    matches = appPath.match(regex);
+  } else if (appPath.endsWith('.app') || appPath.endsWith('.APP')) {
+    // MacOS 路径处理
+    regex = /([^\/]+)\.(APP|app)$/i;
+    matches = appPath.match(regex);
+  } else {
+    return null;
   }
-}
+
+  if (matches && matches[1]) {
+    appName = matches[1];
+  }
+
+  const cachePath = app.getPath('temp');
+  const iconPath = path.join(cachePath, `${appName}.png`);
+  try {
+    await icon.extract(appPath, cachePath);
+
+    const maxWaitTime = 3000; // 最大等待时间
+    const waitInterval = 500;  // 每次检查的间隔时间
+    let waitedTime = 0;
+    while (waitedTime < maxWaitTime) {
+      try {
+        // 确定文件是否生成
+        await promises.access(iconPath);
+        break;
+      } catch {
+        await new Promise(resolve => setTimeout(resolve, waitInterval));
+        waitedTime += waitInterval;
+      }
+    }
+    if (waitedTime >= maxWaitTime) {
+      log.error("getIconBase64: Icon generation timeout");
+    }
+
+    // 转换为 base64
+    const iconData = await promises.readFile(iconPath);
+    const iconBase64 = iconData.toString('base64');
+    // 删除缓存图标
+    await promises.unlink(iconPath);
+    return iconBase64;
+  } catch (err) {
+    log.error("getIconBase64: ", err);
+  }
+});

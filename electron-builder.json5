@@ -11,18 +11,6 @@
   },
   // 打包后需要的文件
   files: ['dist', 'dist-electron'],
-  extraResources: [
-    {
-      from: 'dist/scripts',
-      to: 'scripts',
-      filter: ['**/*']
-    },
-    {
-      from: 'dist/WindowMonitor',
-      to: 'WindowMonitor',
-      filter: ['**/*']
-    }
-  ],
   mac: {
     target: ['dmg'],
     artifactName: '${productName}-Mac-${version}-Installer.${ext}'

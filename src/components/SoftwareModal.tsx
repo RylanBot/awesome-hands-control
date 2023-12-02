@@ -1,0 +1,153 @@
+import { PhotoIcon } from '@heroicons/react/24/solid';
+import React, { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppConfig, updateTimestamp } from '../stores/configSlice';
+import { RootState } from '../types/redux';
+import ToastMessage from './ToastMessage';
+
+
+interface SoftwareModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+interface InputFile extends File {
+    path: string;
+}
+
+const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
+    const dispatch = useDispatch();
+    const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
+
+    const [loading, setLoading] = useState(false);
+
+    const [appName, setAppName] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [base64Icon, setBase64Icon] = useState('');
+
+    // 消息提示
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+
+    function handleAddSoftwareClick() {
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+        fileInputRef.current?.click();
+    };
+
+    async function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0] as InputFile | undefined
+        if (file) {
+            // 获取文件扩展名
+            const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+            if (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png') {
+                // 如果是图片类型，进行转换
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    if (typeof e.target?.result === 'string') {
+                        // 移除前缀 data:*/*;base64, 
+                        const base64String = e.target.result.split(',')[1];
+                        setBase64Icon(base64String)
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // 如果是软件类型，则调用 API 提取 icon
+                setLoading(true)
+                const icon = await window.configApi.getBase64Icon(file.path)
+                setBase64Icon(icon)
+                setLoading(false)
+            }
+        }
+    }
+
+    async function handleSubmit() {
+        // 不能为空
+        if (!appName) {
+            setTimeout(() => {
+                setToastMessage("Input cannot be empty");
+                setShowToast(true);
+                // 置延时为 0 可将代码的执行推迟到当前栈中其他代码完成后
+                // 类似于 Vue 的 nextTick
+            }, 0);
+            return;
+        }
+        // 检查重复
+        if (appsConfigs.some(app => app.name === appName)) {
+            setTimeout(() => {
+                setToastMessage("Software already exists");
+                setShowToast(true);
+            }, 0);
+            return
+        }
+        console.log(base64Icon);
+        const updateSuccess = await window.configApi.updateAppConfig(appName, base64Icon);
+        if (updateSuccess) {
+            dispatch(updateTimestamp());
+        }
+        handleCancel();
+    };
+
+    function handleCancel() {
+        setAppName('');
+        setBase64Icon('');
+        onClose();
+    }
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50">
+            <div className="fixed bg-white p-6 rounded-lg shadow-lg w-1/3 ml-24">
+                <div className="flex items-center gap-4">
+                    <span className='text-gray-700 px-2 ml-2 italic font-mono'>Software Icon</span>
+                    <button onClick={handleAddSoftwareClick} className="w-24 h-24 rounded flex items-center border-solid border-dashed border-2 border-teal-500">
+                        {loading ?
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500 m-8"></div>
+                            :
+                            <>
+                                {base64Icon ?
+                                    <img src={`data:image/x-icon;base64,${base64Icon}`}
+                                        className="w-24 h-24 p-4" />
+                                    :
+                                    <PhotoIcon className="w-24 h-24 text-teal-500 p-8" />}
+                            </>
+
+                        }
+                    </button>
+                </div>
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileInputChange}
+                    accept=".jpg, .jpeg, .png, .exe, .app"
+                    className="hidden"
+                />
+
+                <input
+                    type="text"
+                    value={appName}
+                    onChange={(e) => setAppName(e.target.value)}
+                    placeholder="Software process name"
+                    className="w-full mt-8 rounded-lg focus:ring-emerald-500 focus:ring-2 focus:border-transparent px-4 py-2 italic font-mono"
+                />
+
+                <div className="flex justify-end mt-8 space-x-2">
+                    <button onClick={handleCancel} className="text-sm bg-gray-200 hover:bg-gray-300 rounded py-2 px-4">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} className="text-sm bg-teal-500 hover:bg-teal-600 rounded py-2 px-4 text-white">
+                        Apply
+                    </button>
+                </div>
+
+                {showToast && <ToastMessage message={toastMessage} />}
+            </div>
+        </div>
+    );
+}
+
+export default SoftwareModal;
