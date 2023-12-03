@@ -25,7 +25,7 @@ const SettingPage: React.FC = () => {
     const { software } = useParams(); // 变量名必须和路由配置里一样
 
     const navigate = useNavigate();
-    const [isModalVisible, setModalVisible] = useState(false);
+    const [isModalOpen, setModalOpen] = useState(false);
 
     const UserSetting: React.FC = () => {
         const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
@@ -69,18 +69,18 @@ const SettingPage: React.FC = () => {
 
                 <div className="flex flex-wrap justify-start gap-8 max-w-6xl p-12 pt-6">
                     {/* 不直接将部分配置写入本地文件，避免用户误删 */}
-                    {software === 'Global' &&  <GlobalSetting /> }
+                    {software === 'Global' && <GlobalSetting />}
                     <UserSetting />
                 </div>
 
                 {/* 添加新手势按钮 */}
                 <button
-                    onClick={() => setModalVisible(true)}
+                    onClick={() => setModalOpen(true)}
                     className="fixed bottom-4 right-4 rounded-full w-12 h-12 p-2 bg-teal-400 text-white hover:bg-teal-600 shadow-md"
                 >
                     <PlusIcon />
                 </button>
-                <SettingModal isVisible={isModalVisible} onClose={() => setModalVisible(false)} />
+                {isModalOpen && <SettingModal onClose={() => setModalOpen(false)} />}
             </div>
         </>
     );

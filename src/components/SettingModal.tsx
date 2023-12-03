@@ -7,11 +7,6 @@ import { AppConfig, updateTimestamp } from '../stores/configSlice';
 import { RootState } from '../types/redux';
 import imagePaths from '../utils/hands-paths.json';
 
-interface SettingModalProps {
-    isVisible: boolean;
-    onClose: () => void;
-}
-
 // 键盘直接输入
 const keyboardKeys = [
     'backspace', 'delete', 'tab', 'up', 'down', 'right', 'left',
@@ -34,7 +29,7 @@ const mouseOptions = [
     'left', 'right', 'middle',
 ];
 
-const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
+const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     const { software } = useParams();
     const dispatch = useDispatch();
@@ -141,8 +136,9 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
         const applySuccess = await window.configApi.updateShortcutConfig(software!, keyCombination, selectedLeftHandName, selectedRightHandName)
         if (applySuccess) {
             dispatch(updateTimestamp());
-            handleCancelApply()
         }
+
+        onClose();
     }
 
     // 在当前软件下查询是否有重复的配置
@@ -159,19 +155,6 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
         }
 
         return false;
-    }
-
-    // 关闭前初始化所有状态
-    function handleCancelApply() {
-        setInputError('');
-        setKeyCombination('')
-        setSelectedLeftHandIndex(undefined)
-        setSelectedRightHandIndex(undefined)
-        setSelectedLeftHandName("")
-        setSelectedRightHandName("")
-        setIsDropdownOpen(false)
-        setIsMouseOption(false)
-        onClose();
     }
 
     // 支持的键盘输入
@@ -261,11 +244,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
         };
     }, [clearOnNextKey, inputError]);
 
-
-    if (!isVisible) return null;
-
     const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
-
 
     return (
         <div className="fixed inset-0 flex items-center justify-center">
@@ -275,7 +254,7 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
             <div className="bg-white p-8 rounded-lg shadow-2xl relative max-w-3xl w-full">
                 {/* 关闭按钮 */}
                 <div className='mb-6'>
-                    <button onClick={handleCancelApply} className="absolute top-4 right-24 text-gray-500 hover:text-yellow-500 focus:outline-none">
+                    <button onClick={() => onClose()} className="absolute top-4 right-24 text-gray-500 hover:text-yellow-500 focus:outline-none">
                         Cancel
                     </button>
                     <button onClick={handleConfirmApply} className="absolute top-4 right-4 text-gray-500 hover:text-teal-500 focus:outline-none">
@@ -347,7 +326,6 @@ const SettingModal: React.FC<SettingModalProps> = ({ isVisible, onClose }) => {
                             )}
                         </>
                     )}
-
 
                 </div>
 

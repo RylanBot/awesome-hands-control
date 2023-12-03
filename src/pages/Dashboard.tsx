@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
                         <span className="text-md font-bold text-gray-700 mt-3">Add Software</span>
                     </div>
 
-                    <SoftwareModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+                    {isModalOpen && <SoftwareModal onClose={() => setModalOpen(false)} />}
 
                 </div>
             </div>

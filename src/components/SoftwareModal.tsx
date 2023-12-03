@@ -4,18 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppConfig, updateTimestamp } from '../stores/configSlice';
 import { RootState } from '../types/redux';
 import ToastMessage from './ToastMessage';
-
-
-interface SoftwareModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
 interface InputFile extends File {
     path: string;
 }
 
-const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
+const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const dispatch = useDispatch();
     const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
@@ -27,7 +20,11 @@ const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
 
     // 消息提示
     const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
+    const [message, setMessage] = useState('');
+    function displayToast(msg: string) {
+        setMessage(msg);
+        setShowToast(true);
+    };
 
     function handleAddSoftwareClick() {
         if (fileInputRef.current) {
@@ -65,38 +62,21 @@ const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
 
     async function handleSubmit() {
         // 不能为空
-        if (!appName) {
-            setTimeout(() => {
-                setToastMessage("Input cannot be empty");
-                setShowToast(true);
-                // 置延时为 0 可将代码的执行推迟到当前栈中其他代码完成后
-                // 类似于 Vue 的 nextTick
-            }, 0);
+        if (!appName.trim()) {
+            displayToast("Input cannot be empty");
             return;
         }
         // 检查重复
         if (appsConfigs.some(app => app.name === appName)) {
-            setTimeout(() => {
-                setToastMessage("Software already exists");
-                setShowToast(true);
-            }, 0);
+            displayToast("Software already exists");
             return
         }
-        console.log(base64Icon);
         const updateSuccess = await window.configApi.updateAppConfig(appName, base64Icon);
         if (updateSuccess) {
             dispatch(updateTimestamp());
         }
-        handleCancel();
-    };
-
-    function handleCancel() {
-        setAppName('');
-        setBase64Icon('');
         onClose();
-    }
-
-    if (!isOpen) return null;
+    };
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50">
@@ -114,7 +94,6 @@ const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
                                     :
                                     <PhotoIcon className="w-24 h-24 text-teal-500 p-8" />}
                             </>
-
                         }
                     </button>
                 </div>
@@ -136,7 +115,7 @@ const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
                 />
 
                 <div className="flex justify-end mt-8 space-x-2">
-                    <button onClick={handleCancel} className="text-sm bg-gray-200 hover:bg-gray-300 rounded py-2 px-4">
+                    <button onClick={() => onClose()} className="text-sm bg-gray-200 hover:bg-gray-300 rounded py-2 px-4">
                         Cancel
                     </button>
                     <button onClick={handleSubmit} className="text-sm bg-teal-500 hover:bg-teal-600 rounded py-2 px-4 text-white">
@@ -144,7 +123,7 @@ const SoftwareModal: React.FC<SoftwareModalProps> = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                {showToast && <ToastMessage message={toastMessage} />}
+                {showToast && <ToastMessage message={message} onClose={() => setShowToast(false)} />}
             </div>
         </div>
     );
