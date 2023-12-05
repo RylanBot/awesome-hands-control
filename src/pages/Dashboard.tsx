@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar";
 import { GlobalSoftwareCard, SoftwareCard } from "../components/SoftwareCard";
 import SoftwareModal from "../components/SoftwareModal";
-import { AppConfig } from "../stores/configSlice";
-import { RootState } from "../types/redux";
+import { RootState } from "../stores/redux";
 
 const Dashboard: React.FC = () => {
 

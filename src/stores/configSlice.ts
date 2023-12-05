@@ -1,13 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-export interface AppConfig {
-  name: string;
-  icon: string;
-  shortcut: {
-    [key: string]: [string, string];
-  };
-}
-
 interface ConfigState {
   apps: AppConfig[];
   lastUpdated: number;

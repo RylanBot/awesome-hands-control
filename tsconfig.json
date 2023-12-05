@@ -23,7 +23,8 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src"
+    "src",
+    "electron"
   ],
   "references": [
     {

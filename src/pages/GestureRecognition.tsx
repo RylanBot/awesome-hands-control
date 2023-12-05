@@ -1,11 +1,10 @@
 import { Camera } from '@mediapipe/camera_utils';
 import { FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
 import React, { useEffect, useRef, useState } from 'react';
-import Webcam from 'react-webcam';
-import { AppConfig } from '../stores/configSlice';
 import { useSelector } from 'react-redux';
-import { RootState } from '../types/redux';
+import Webcam from 'react-webcam';
 import Loading from '../components/Loading';
+import { RootState } from '../stores/redux';
 
 const GestureRecognition: React.FC = () => {
     // 模型加载状态
@@ -66,7 +65,6 @@ const GestureRecognition: React.FC = () => {
                 const camera = new Camera(video, {
                     onFrame: async () => {
                         const result = await gestureRecognizer.recognize(video);
-                        // workerRef.current?.postMessage({ gestureData: result });
                         // console.log(result);        
                         onResult(result)
                     }

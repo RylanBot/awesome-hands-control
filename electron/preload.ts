@@ -120,52 +120,47 @@ window.onmessage = ev => {
   ev.data.payload === 'removeLoading' && removeLoading()
 }
 
-// ????
-// setTimeout(removeLoading, 4999)
-
 // ----------  以上是基本框架，以下是添加的具体功能 ----------
-
 // 类似后端的 Controller 层（ 暴露给渲染层的 API）
-// (send) 发送消息到主进程；(on) 监听从主进程发来的消息
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  // appVersion: packageJson.version
-});
+/*  1. (send) 发送消息到主进程（单向通信，不期望直接获得响应）- 对应 ipcMain.on
+    2. (on) 监听从主进程发来的消息 - xxxWindow.webContents.send
+    3. (invoke) 发送消息，并期望得到一个响应 (异步) - ipcMain.handle */
 
 contextBridge.exposeInMainWorld('windowApi', {
-  close: (windowName) => ipcRenderer.send('close', windowName),
+  close: (windowName: string) => ipcRenderer.send('close', windowName),
   // 主窗口
   openCamera: () => ipcRenderer.send('openCamera'),
-  minimizeToTaskbar: (windowName) => ipcRenderer.send('minimizeToTaskbar', windowName),
+  minimizeToTaskbar: (windowName: string) => ipcRenderer.send('minimizeToTaskbar', windowName),
   // 摄像机窗口
   minimizeToTray: () => ipcRenderer.send('minimizeToTray'),
   minimizeToCorner: () => ipcRenderer.send('minimizeToCorner'),
   resetCameraWindow: () => ipcRenderer.send('resetCameraWindow'),
   // 判断当前窗口
-  identifyWindow: (callback) => ipcRenderer.on('identifyWindow', (_, windowName) => {
+  identifyWindow: (callback: (windowName: string) => void) => ipcRenderer.on('identifyWindow', (_, windowName) => {
     callback(windowName)
   }),
   // 打开外部链接
-  openExternalLink: (url) => ipcRenderer.send('openExternalLink', url),
+  openExternalLink: (url: string) => ipcRenderer.send('openExternalLink', url),
 });
 
 contextBridge.exposeInMainWorld('configApi', {
   initialConfig: async () => {
     return ipcRenderer.invoke('initialConfig')
   },
-  updateAppConfig: async (appPath, base64Icon) => {
+  updateAppConfig: async (appPath: string, base64Icon: string) => {
     return ipcRenderer.invoke('updateAppConfig', appPath, base64Icon);
   },
-  deleteAppConfig: async (appName) => {
+  deleteAppConfig: async (appName: string) => {
     return ipcRenderer.invoke('deleteAppConfig', appName);
   },
-  updateShortcutConfig: async (appName, shortcut, leftHand, rightHand) => {
+  updateShortcutConfig: async (appName: string, shortcut: string, leftHand: string, rightHand: string) => {
     return ipcRenderer.invoke('updateShortcutConfig', appName, shortcut, leftHand, rightHand);
   },
-  deleteShortcutConfig: async (appName, shortcut) => {
+  deleteShortcutConfig: async (appName: string, shortcut: string) => {
     return ipcRenderer.invoke('deleteShortcutConfig', appName, shortcut);
   },
-  getBase64Icon: async (appPath) => {
+  getBase64Icon: async (appPath: string) => {
     return ipcRenderer.invoke('getBase64Icon', appPath);
   },
   getProjectVersion: () => {
@@ -174,10 +169,10 @@ contextBridge.exposeInMainWorld('configApi', {
 });
 
 contextBridge.exposeInMainWorld('controlApi', {
-  transmitProcess: (callback) => ipcRenderer.on('transmitProcess', (_, processName) => {
+  transmitProcess: (callback: (processName: string) => void) => ipcRenderer.on('transmitProcess', (_, processName) => {
     callback(processName)
   }
   ),
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },
-  triggerMouse: (delta, isLeftHand) => { ipcRenderer.send('triggerMouse', delta, isLeftHand); },
+  triggerMouse: (deltaCoordinates: { x: number; y: number }, isLeftHand: string) => { ipcRenderer.send('triggerMouse', deltaCoordinates, isLeftHand); },
 });

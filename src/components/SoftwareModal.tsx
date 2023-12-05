@@ -1,8 +1,8 @@
 import { PhotoIcon } from '@heroicons/react/24/solid';
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppConfig, updateTimestamp } from '../stores/configSlice';
-import { RootState } from '../types/redux';
+import { updateTimestamp } from '../stores/configSlice';
+import { RootState } from '../stores/redux';
 import ToastMessage from './ToastMessage';
 interface InputFile extends File {
     path: string;

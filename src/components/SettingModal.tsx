@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { AppConfig, updateTimestamp } from '../stores/configSlice';
-import { RootState } from '../types/redux';
+import { updateTimestamp } from '../stores/configSlice';
+import { RootState } from '../stores/redux';
 import imagePaths from '../utils/hands-paths.json';
 
 // 键盘直接输入

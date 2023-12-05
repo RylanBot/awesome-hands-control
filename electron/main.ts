@@ -1,4 +1,3 @@
-import { AppConfig } from './../src/stores/configSlice';
 /* 主进程文件，负责与操作系统的交互。 */
 
 import { BrowserWindow, Menu, Tray, app, ipcMain, screen, shell } from 'electron';
@@ -43,7 +42,6 @@ function createMainWindow() {
 
 
   if (VITE_DEV_SERVER_URL) {
-    // main前面不用添加斜杠/，或者vite.config那边replace的时候不用，否则路由会匹配错误
     mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/main`);
     // mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/`);
   } else {
@@ -86,7 +84,6 @@ function createCameraWindow() {
   cameraWindow.setAlwaysOnTop(true);
 
   if (VITE_DEV_SERVER_URL) {
-    // camera前面不用添加斜杠/，否则路由会匹配错误
     cameraWindow.loadURL(`${VITE_DEV_SERVER_URL}#/camera`);
   } else {
     // win.loadFile('dist/index.html')
@@ -170,9 +167,7 @@ app.on('activate', () => {
 // 🔊 这是整个 electron 项目的生命周期，不单指某个窗口
 app.whenReady().then(async () => {
   try {
-    const initialConfig = await loadInitialConfig();
-    // global 关键字引用主进程的全局命名空间
-    global.config = initialConfig;
+    await loadInitialConfig();
     createMainWindow()
   } catch (error) {
     log.error("initialConfig: ", error);
@@ -198,12 +193,11 @@ async function loadInitialConfig() {
     store.set('apps', defaultConfig);
     localConfigs = defaultConfig;
   } else {
-    localConfigs = store.get('apps') || []; // 确保总是返回数组
+    localConfigs = store.get('apps'); // 确保总是返回数组
   }
-  return localConfigs;
 }
-// ----------  以上是基本框架，以下是添加的具体功能 ----------
 
+// ----------  以上是基本框架，以下是添加的具体功能 ----------
 // 类似后端的 Service 层
 
 // 关闭窗口
@@ -232,7 +226,6 @@ ipcMain.on('minimizeToTaskbar', (_, windowName) => {
     /*  electron中如果一个 Window 被设置为隐藏或者最小化后
         那么这个它人认为该窗口应该就不需要过多的占用 CPU 资源, 导致相机无法正常读取 
         相机的最小化实际是利用样式将其变透明, 而不是真正隐藏 */
-    // cameraWindow.setOpacity(0.0);
     createCameraTray();
     cameraWindow.setOpacity(0.0);
     cameraWindow.setSkipTaskbar(true);
@@ -249,7 +242,6 @@ ipcMain.on('openCamera', () => {
   }
 
   createCameraWindow();
-  // createCameraTray();
 });
 
 // >> 摄像机窗口
@@ -301,34 +293,9 @@ ipcMain.on('resetCameraWindow', () => {
   }
 });
 
-// 获取软件的图标
-async function getIconBase64(exePath) {
-  const cachePath = app.getPath('temp');
-
-  const regex = /([^\\]+)\.exe$/i;
-  const matches = exePath.match(regex);
-  const exeName = matches[1];
-  const iconPath = path.join(cachePath, `${exeName}.png`);
-
-  try {
-    icon.extract(exePath, cachePath);
-    while (!fs.existsSync(iconPath)) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    // 转换为 base64
-    const iconData = fs.readFileSync(iconPath);
-    const iconBase64 = iconData.toString('base64');
-    // 删除缓存图标
-    fs.unlinkSync(iconPath);
-    return iconBase64;
-  } catch (err) {
-    throw err;
-  }
-}
-
 // 读取初始化配置
 ipcMain.handle('initialConfig', async () => {
-  return global.config;
+  return localConfigs;
 })
 
 // 添加软件
@@ -386,24 +353,26 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 const robot = require('robotjs');
 // import robot from 'robotjs'
 
-ipcMain.on('triggerShortcut', (_, shortcut) => {
+ipcMain.on('triggerShortcut', (_, shortcut: string) => {
   try {
     // 检测是否为鼠标操作  
     if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
       const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
-      const mouseButton = mouseButtonMatch[1]
-      const isDoubleClick = shortcut.includes('Mouse Double Click');
-      robot.mouseClick(mouseButton, isDoubleClick);
+      if (mouseButtonMatch) {
+        const mouseButton: string = mouseButtonMatch[1];
+        const isDoubleClick = shortcut.includes('Mouse Double Click');
+        robot.mouseClick(mouseButton, isDoubleClick);
+      }
     } else {
       // 处理键盘快捷键
       const keys = shortcut.split('+');
       const validModifiers = ['alt', 'command', 'control', 'shift', 'win'];
-      const modifiers = keys.filter(key => validModifiers.includes(key));
-      const nonModifierKeys = keys.filter(key => !validModifiers.includes(key));
-      nonModifierKeys.forEach((key, index) => {
+      const modifiers = keys.filter((key: string) => validModifiers.includes(key));
+      const nonModifierKeys = keys.filter((key: string) => !validModifiers.includes(key));
+      nonModifierKeys.forEach((key: string, index: number) => {
         robot.keyToggle(key, 'down', modifiers);
         if (index === nonModifierKeys.length - 1) {
-          nonModifierKeys.forEach(key => robot.keyToggle(key, 'up', modifiers));
+          nonModifierKeys.forEach((key: string) => robot.keyToggle(key, 'up', modifiers));
         }
       });
     }
@@ -411,6 +380,7 @@ ipcMain.on('triggerShortcut', (_, shortcut) => {
     log.error("triggerShortcut", error);
   }
 });
+
 
 //处理鼠标移动
 ipcMain.on('triggerMouse', (_, delta, isLeftHand) => {
@@ -439,8 +409,9 @@ ipcMain.on('openExternalLink', (_, url) => {
 
 // 进程判断
 function runWindowMonitor() {
-  let lastProcessName = null;
+  let lastProcessName: string = "";
 
+  // 轮询
   setInterval(async () => {
     try {
       const windowInfo = await activeWin();

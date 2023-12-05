@@ -6,8 +6,7 @@ import SettingModal from '../components/SettingModal';
 import { ArrowSmallLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 import { useSelector } from 'react-redux';
 import SettingCard from '../components/SettingCard';
-import { AppConfig } from '../stores/configSlice';
-import { RootState } from '../types/redux';
+import { RootState } from '../stores/redux';
 
 const GlobalSetting: React.FC = () => {
     {/* 暂不开放修改权限 */ }
