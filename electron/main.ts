@@ -65,6 +65,7 @@ function createMainWindow() {
 // 新增一个自定义窗口
 let cameraWindow: BrowserWindow | null
 let isTransparent = false;
+let monitorIntervalId: NodeJS.Timeout | null = null;
 function createCameraWindow() {
   cameraWindow = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC! as string, './images/icons/CameraWindow.ico'),
@@ -103,14 +104,15 @@ function createCameraWindow() {
   })
 
   cameraWindow.on('closed', () => {
-    // stopWindowMonitor();
+    if (monitorIntervalId) {
+      clearInterval(monitorIntervalId);
+    }
     cameraWindow = null;
     if (tray) {
       tray.destroy();
       tray = null;
     }
   });
-
 }
 
 
@@ -402,25 +404,29 @@ ipcMain.on('openExternalLink', (_, url) => {
 
 // 进程判断
 function runWindowMonitor() {
-  let lastProcessName: string = "";
-
-  // 轮询
-  setInterval(async () => {
+  let lastProcessName = "";
+  let intervalId = setInterval(async () => {
     try {
-      const windowInfo = await activeWin();
-      const processName = windowInfo.owner.name;
+      if (!cameraWindow || cameraWindow.isDestroyed()) {
+        clearInterval(intervalId);
+        return;
+      }
 
-      // 只有在进程名称改变时才发送
+      const windowInfo = await activeWin();
+      if (!windowInfo || !windowInfo.owner) return;
+
+      const processName = windowInfo.owner.name;
       if (processName !== lastProcessName) {
-        if (cameraWindow && !cameraWindow.isDestroyed()) {
-          cameraWindow.webContents.send('transmitProcess', processName);
-        }
+        // 只有在进程名称改变时才发送
+        cameraWindow.webContents.send('transmitProcess', processName);
         lastProcessName = processName;
       }
     } catch (error) {
       log.error('runWindowMonitor: ', error);
     }
   }, 1000);
+
+  return intervalId;
 }
 
 // 提取软件的 icon
