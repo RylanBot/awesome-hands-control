@@ -12,6 +12,7 @@
   // 打包后需要的文件
   files: ['dist', 'dist-electron'],
   mac: {
+    icon: 'dist/images/icons/MainWindow.icns',
     target: ['dmg'],
     artifactName: '${productName}-Mac-${version}-Installer.${ext}'
   },
@@ -29,7 +30,7 @@
     oneClick: false, // 是否支持一键安装
     perMachine: false, // 仅安装到当前用户的个人文件夹
     allowToChangeInstallationDirectory: true,
-    deleteAppDataOnUninstall: true 
+    deleteAppDataOnUninstall: true
   },
   linux: {
     target: ['AppImage'],

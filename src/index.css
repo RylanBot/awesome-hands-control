@@ -23,5 +23,9 @@ body::-webkit-scrollbar {
 }
 
 img {
-  -webkit-user-drag: none; 
+  -webkit-user-drag: none;
+}
+
+input {
+  -webkit-user-select: auto;
 }

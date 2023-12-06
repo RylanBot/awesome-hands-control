@@ -102,7 +102,7 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileInputChange}
-                    accept=".jpg, .jpeg, .png, .exe, .app"
+                    accept=".jpg, .jpeg, .png, .exe"
                     className="hidden"
                 />
 

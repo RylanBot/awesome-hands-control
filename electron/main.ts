@@ -20,6 +20,15 @@ process.on('uncaughtException', (error) => {
   log.error('uncaughtException: ', error);
 });
 
+let iconSuffix: string;
+if (process.platform === 'darwin') {
+  // macOS 系统使用
+  iconSuffix = 'icns'
+} else {
+  // Windows
+  iconSuffix = 'ico'
+}
+
 // BrowserWindow 用于创建和管理应用的窗口 
 let mainWindow: BrowserWindow | null
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
@@ -27,7 +36,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC!, '/images/icons/MainWindow.ico'),
+    icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${iconSuffix}`),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // 是否在渲染进程中启用 Node.js 集成，即 *.tsx 能直接访问系统接口
@@ -67,8 +76,9 @@ let cameraWindow: BrowserWindow | null
 let isTransparent = false;
 let monitorIntervalId: NodeJS.Timeout | null = null;
 function createCameraWindow() {
+
   cameraWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC! as string, './images/icons/CameraWindow.ico'),
+    icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${iconSuffix}`),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -431,22 +441,14 @@ function runWindowMonitor() {
 
 // 提取软件的 icon
 ipcMain.handle('getBase64Icon', async (_, appPath) => {
-
-  let regex, matches, appName;
+  let appName;
   if (appPath.endsWith('.EXE') || appPath.endsWith('.exe')) {
     // Windows 路径处理
-    regex = /([^\\]+)\.(EXE|exe)$/i;
-    matches = appPath.match(regex);
-  } else if (appPath.endsWith('.app') || appPath.endsWith('.APP')) {
-    // MacOS 路径处理
-    regex = /([^\/]+)\.(APP|app)$/i;
-    matches = appPath.match(regex);
+    const regex = /([^\\]+)\.(EXE|exe)$/i;
+    const matches = appPath.match(regex);
+    appName = matches[1];
   } else {
     return null;
-  }
-
-  if (matches && matches[1]) {
-    appName = matches[1];
   }
 
   const cachePath = app.getPath('temp');
