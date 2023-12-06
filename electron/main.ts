@@ -485,6 +485,8 @@ ipcMain.handle('getBase64Icon', async (_, appPath) => {
 });
 
 ipcMain.handle('getProjectVersion', () => {
-  const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
-  return (packageJson.version)
-})
+  const appPath = app.getAppPath();
+  const packageJsonPath = path.join(appPath, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
+});
