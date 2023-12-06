@@ -3061,7 +3061,7 @@ mz@^2.7.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
-nan@^2.14.0:
+nan@^2.14.2:
   version "2.18.0"
   resolved "https://registry.npmjs.org/nan/-/nan-2.18.0.tgz#26a6faae7ffbeb293a39660e88a76b82e30b7554"
   integrity sha512-W7tfG7vMOGtD30sHoZSSc/JVYiyDPEyQVso/Zz+/uQd0B0L46gtC+pHha5FFMRpil6fm/AoEcRWyOVi4+E/f8w==
@@ -3091,7 +3091,7 @@ negotiator@^0.6.3:
   resolved "https://registry.npmjs.org/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-node-abi@^2.13.0, node-abi@^2.7.0:
+node-abi@^2.7.0:
   version "2.30.1"
   resolved "https://registry.npmjs.org/node-abi/-/node-abi-2.30.1.tgz#c437d4b1fe0e285aaf290d45b45d4d7afedac4cf"
   integrity sha512-/2D0wOQPgaUWzVSVgRMx+trKJRC2UG4SUc4oCJoXx9Uxjtp0Vy3/kt7zcbxHF8+Z/pK3UloLWzBISg72brfy1w==
@@ -3757,13 +3757,11 @@ roarr@^2.15.3:
     semver-compare "^1.0.0"
     sprintf-js "^1.1.2"
 
-robotjs@^0.6.0:
+"robotjs@github:octalmage/robotjs#master":
   version "0.6.0"
-  resolved "https://registry.npmjs.org/robotjs/-/robotjs-0.6.0.tgz#8d1f63221f5b18dc496c7768f75261043891f64a"
-  integrity sha512-6pRWI3d+CBZqCXT/rsJfabbZoELua+jTeXilG27F8Jvix/J2BYZ0O7Tly2WCmXyqw5xYdCvOwvCeLRHEtXkt4w==
+  resolved "https://codeload.github.com/octalmage/robotjs/tar.gz/8ae87a91f06f49559f0db387bc2bd1ea01419880"
   dependencies:
-    nan "^2.14.0"
-    node-abi "^2.13.0"
+    nan "^2.14.2"
     prebuild-install "^5.3.3"
 
 rollup@^3.27.1:

@@ -7,6 +7,7 @@ import path from 'node:path';
 const fs = require('fs');
 const Store = require('electron-store');
 const log = require('electron-log');
+const robot = require('robotjs');
 const activeWin = require('active-win');
 const icon = require('file-icon-extractor');
 
@@ -350,9 +351,6 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 })
 
 // 模拟键盘输入
-const robot = require('robotjs');
-// import robot from 'robotjs'
-
 ipcMain.on('triggerShortcut', (_, shortcut: string) => {
   try {
     // 检测是否为鼠标操作  
@@ -379,28 +377,23 @@ ipcMain.on('triggerShortcut', (_, shortcut: string) => {
   } catch (error) {
     log.error("triggerShortcut", error);
   }
-});
-
-
-//处理鼠标移动
-ipcMain.on('triggerMouse', (_, delta, isLeftHand) => {
-  let mouse = robot.getMousePos();
-  // console.log("Mouse is at x:" + mouse.x + " y:" + mouse.y);
-
-  if (isLeftHand) {
-    // 左手触发滚轮
-    // win10 没反应（官方还没修复，则暂时弃用）
-    // robot.scrollMouse(delta.x, delta.y);
-    // setTimeout(function () {
-    //   robot.scrollMouse(delta.x, delta.y);
-    // }, 2000);
-  } else {
-    // 右手触发鼠标光标
-    robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
-  }
-
 })
 
+// 处理鼠标移动
+ipcMain.on('triggerMouse', (_, delta, isLeftHand) => {
+  try {
+    if (isLeftHand) {
+      // 左手触发滚轮
+      robot.scrollMouse(0, delta.y / 2);
+    } else {
+      // 右手触发鼠标光标
+      const mouse = robot.getMousePos();
+      robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
+    }
+  } catch (error) {
+    log.error("triggerMouse", error);
+  }
+})
 
 // 打开外部链接
 ipcMain.on('openExternalLink', (_, url) => {

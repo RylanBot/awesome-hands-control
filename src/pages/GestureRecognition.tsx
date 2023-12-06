@@ -6,6 +6,11 @@ import Webcam from 'react-webcam';
 import Loading from '../components/Loading';
 import { RootState } from '../stores/redux';
 
+interface HandGestureData {
+    handLandmarks: Landmark[];
+    isLeftHand: boolean;
+}
+
 const GestureRecognition: React.FC = () => {
     // 模型加载状态
     const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -99,25 +104,31 @@ const GestureRecognition: React.FC = () => {
             setIsModelLoaded(true);
         }
 
-        // （一）发送数据给 worker
+        // 发送数据给 worker
         workerRef.current?.postMessage({ gestureData: result });
 
         const { landmarks, handedness, gestures } = result;
-
         setDetectedGestures({ left: "", right: "" });
+        let pointingUpHands: HandGestureData[] = [];
 
         gestures.forEach((gesture, index) => {
-            // (二) 显示识别的手势
+            // 显示识别的手势
             const isLeftHand = handedness[index] && handedness[index][0].categoryName === "Left";
             const { categoryName } = gesture[0];
             const displayText = categoryName === 'None' ? "" : categoryName;
             setGesture(isLeftHand, displayText);
 
-            // （三）单独处理指定手势
-            if (gesture[0].categoryName == 'Pointing_Up') {
-                processPointingUp(landmarks[index], isLeftHand)
+            // 单独处理指定手势（如果根据 detectedGestures 还需要 setTimeout 等待 setState 的下一个周期更新）
+            if (gesture[0].categoryName === 'Pointing_Up') {
+                pointingUpHands.push({ handLandmarks: landmarks[index], isLeftHand });
             }
         });
+
+        // 只有一只手是 PointingUp 时触发操作，避免两根手指冲突
+        if (pointingUpHands.length === 1) {
+            const pointingUpHand = pointingUpHands[0];
+            processPointingUp(pointingUpHand.handLandmarks, pointingUpHand.isLeftHand);
+        }
     }
 
     function findShortcut() {

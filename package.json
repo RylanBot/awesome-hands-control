@@ -2,7 +2,7 @@
   "author": "Rylan",
   "name": "awesome-hands-control",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A powerful tool for controlling applications using hand gestures.",
   "scripts": {
     "dev": "vite",
@@ -26,7 +26,7 @@
     "react-router-dom": "^6.17.0",
     "react-webcam": "7.1.1",
     "redux": "^4.2.1",
-    "robotjs": "^0.6.0"
+    "robotjs": "github:octalmage/robotjs#master"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
