@@ -366,11 +366,11 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 ipcMain.on('triggerShortcut', (_, shortcut: string) => {
   try {
     // 检测是否为鼠标操作  
-    if (shortcut.includes('Mouse Click') || shortcut.includes('Mouse Double Click')) {
+    if (shortcut.includes('mouse_click') || shortcut.includes('mouse_double_click')) {
       const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
       if (mouseButtonMatch) {
         const mouseButton: string = mouseButtonMatch[1];
-        const isDoubleClick = shortcut.includes('Mouse Double Click');
+        const isDoubleClick = shortcut.includes('mouse_double_click');
         robot.mouseClick(mouseButton, isDoubleClick);
       }
     } else {

@@ -7,7 +7,7 @@ import { updateTimestamp } from '../stores/configSlice';
 import { RootState } from '../stores/redux';
 import imagePaths from '../utils/hands-paths.json';
 
-// 键盘直接输入
+// 允许接受的键盘输入按键
 const keyboardKeys = [
     'backspace', 'delete', 'tab', 'up', 'down', 'right', 'left',
     'pageup', 'pagedown', 'command', 'alt', 'control', 'shift', 'space',
@@ -16,12 +16,11 @@ const keyboardKeys = [
     'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12',
 ];
 
-// 特定事件
+// 全局设置的特定操作
 const controlKeys = [
+    'mouse_click', 'mouse_double_click',
     'audio_vol_down', 'audio_vol_up', 'audio_pause',
-    // 'audio_play', 'audio_stop', 'printscreen', 
-    'audio_mute', 'audio_prev', 'audio_next',
-    'Mouse Click', 'Mouse Double Click'
+    'audio_mute', 'audio_prev', 'audio_next'
 ];
 
 // 鼠标子选项
@@ -29,56 +28,78 @@ const mouseOptions = [
     'left', 'right', 'middle',
 ];
 
-const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+// 方向键映射
+const directionKeyMap: { [key: string]: string } = {
+    'ArrowUp': 'up',
+    'ArrowDown': 'down',
+    'ArrowLeft': 'left',
+    'ArrowRight': 'right'
+};
 
+// 将 Shift + 符号映射回数字
+const shiftNumKeyMap: { [key: string]: string } = {
+    '!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0'
+};
+
+const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { software } = useParams();
     const dispatch = useDispatch();
     const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
-    const [_, setKeysPressed] = useState(new Set<string>());
-    const [keyCombination, setKeyCombination] = useState('');
-    const [clearOnNextKey, setClearOnNextKey] = useState(false);
+    // 快捷键输入
     const inputRef = useRef(null);
+    const [keyCombination, setKeyCombination] = useState('');
+    // 清空输入
+    const [clearOnNextKey, setClearOnNextKey] = useState(false);
+    // 异常提醒
+    const [inputError, setInputError] = useState('');
+    // 下拉清单
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    // 鼠标子选项
     const [isMouseOption, setIsMouseOption] = useState(false);
-    const [selectedControlKey, setSelectedControlKey] = useState('');
+    // 绑定的全局设置的特定操作
+    const [controlKey, setControlKey] = useState('');
+    // 手势绑定
+    const [hands, setHands] = useState({ left: '', right: '' });
 
+    // 下拉菜单开关
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
     const toggleMouseOption = () => setIsMouseOption(!isMouseOption);
 
-    // 从下拉菜单选择
+    // 输入框激活
+    function handleInputClick() {
+        if (isDropdownOpen) { setIsDropdownOpen(false); }
+        if (isMouseOption) { setIsMouseOption(false); }
+    };
+
+    // 下拉菜单选择操作
     function selectKeyFromDropdown(key: string) {
-        if (key === 'Mouse Click' || key === 'Mouse Double Click') {
+        if (key === 'mouse_click' || key === 'mouse_double_click') {
             toggleMouseOption()
-            setSelectedControlKey(key);
+            setControlKey(key);
         } else {
             setKeyCombination(key);
             toggleDropdown();
+            if (isMouseOption) { toggleMouseOption() };
         }
     };
 
     // 添加鼠标子选项
     function handleMouseOptionSelect(option: string) {
-        setKeyCombination(`${selectedControlKey} (${option})`);
-        setSelectedControlKey('');
+        setKeyCombination(`${controlKey} (${option})`);
+        setControlKey('');
         toggleMouseOption();
         toggleDropdown();
     }
 
-    function handleInputClick() {
-        if (isDropdownOpen) {
-            setIsDropdownOpen(false);
-        }
-        if (isMouseOption) {
-            setIsMouseOption(false);
-        }
-    };
-
-    // 手势绑定
-    const [selectedLeftHandIndex, setSelectedLeftHandIndex] = useState<number>();
-    const [selectedRightHandIndex, setSelectedRightHandIndex] = useState<number>();
-    const [selectedLeftHandName, setSelectedLeftHandName] = useState<string>("");
-    const [selectedRightHandName, setSelectedRightHandName] = useState<string>("");
+    // 手势选择
+    function handleHandSelect(handType: 'left' | 'right', gestureName: string) {
+        setInputError('');
+        setHands(prevHands => ({
+            ...prevHands,
+            [handType]: prevHands[handType] === gestureName ? '' : gestureName
+        }));
+    }
 
     // 提取图片文件名中对应的手势（去除 Left/Right 后缀）
     function extractGestureName(gestureName: string) {
@@ -87,33 +108,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         return nameParts.join('_');
     }
 
-    // 左手手势选择
-    function handleLeftHandSelect(gestureIndex: number) {
-        setInputError('');
-        if (selectedLeftHandIndex === gestureIndex) {
-            setSelectedLeftHandIndex(undefined)  // 再次点击变为取消选择
-            setSelectedLeftHandName("")
-        } else {
-            setSelectedLeftHandIndex(gestureIndex)
-            const gestureName = extractGestureName(imagePaths.left[gestureIndex])!;
-            setSelectedLeftHandName(gestureName);
-        }
-    };
-
-    // 右手手势选择
-    function handleRightHandSelect(gestureIndex: number) {
-        setInputError('');
-        if (selectedRightHandIndex === gestureIndex) {
-            setSelectedRightHandIndex(undefined)
-            setSelectedRightHandName("");
-        } else {
-            setSelectedRightHandIndex(gestureIndex)
-            const gestureName = extractGestureName(imagePaths.left[gestureIndex])!;
-            setSelectedRightHandName(gestureName);
-        }
-    };
-
-    const [inputError, setInputError] = useState('');
     // 确认添加
     async function handleConfirmApply() {
         // 检查输入是否为空
@@ -121,7 +115,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             setInputError('Input cannot be empty');
             return;
         }
-        if (selectedLeftHandName === '' && selectedRightHandName === '') {
+        if (hands.left === '' && hands.right === '') {
             setInputError('Choose at least one gesture');
             return;
         }
@@ -133,7 +127,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             return;
         }
 
-        const applySuccess = await window.configApi.updateShortcutConfig(software!, keyCombination, selectedLeftHandName, selectedRightHandName)
+        const applySuccess = await window.configApi.updateShortcutConfig(software!, keyCombination, hands.left, hands.right)
         if (applySuccess) {
             dispatch(updateTimestamp());
         }
@@ -141,14 +135,13 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         onClose();
     }
 
-    // 在当前软件下查询是否有重复的配置
-    // 支持不同手势对应相同的快捷键，但拒绝使用相同的手势
+    // 在当前软件下查询是否有重复的配置 (支持不同手势对应相同的快捷键，但拒绝使用相同的手势)
     function checkDuplicateSetting(): boolean {
         const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === software);
         if (currentConfig) {
             const shortcuts = currentConfig.shortcut;
             for (const [shortcut, [left, right]] of Object.entries(shortcuts)) {
-                if (shortcut === keyCombination || (left === selectedLeftHandName && right === selectedRightHandName)) {
+                if (shortcut === keyCombination || (left === hands.left && right === hands.right)) {
                     return true;
                 }
             }
@@ -167,66 +160,51 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         return keyboardKeys.includes(key.toLowerCase());
     };
 
-    // 处理键盘输入绑定快捷键
+    // 处理键盘输入
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (document.activeElement === inputRef.current) {
-                event.preventDefault();
+            if (document.activeElement !== inputRef.current) return;
+            event.preventDefault();
 
-                if (inputError) {
-                    setInputError('');
-                }
-
-                if (clearOnNextKey) {
-                    setKeysPressed(new Set());
-                    setKeyCombination('');
-                    setClearOnNextKey(false);
-                }
-
-                let keyToAdd = event.key;
-
-                // 将 Shift + 数字键的符号映射回数字
-                const shiftNumKeyMap: { [key: string]: string } = {
-                    '!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0'
-                };
-                if (event.shiftKey && shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap]) {
-                    keyToAdd = shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap];
-                }
-
-                // 将方向键转换为 robotjs 能识别的格式
-                const directionKeyMap: { [key: string]: string } = {
-                    'ArrowUp': 'up',
-                    'ArrowDown': 'down',
-                    'ArrowLeft': 'left',
-                    'ArrowRight': 'right'
-                };
-                if (directionKeyMap[keyToAdd]) {
-                    keyToAdd = directionKeyMap[keyToAdd];
-                }
-
-                // 如果是数字键，添加 'numpad_' 前缀
-                if (!isNaN(Number(keyToAdd)) && keyToAdd.trim() !== '') {
-                    keyToAdd = 'numpad_' + keyToAdd;
-                }
-
-                // 处理特殊键，如空格键
-                if (keyToAdd === ' ') {
-                    keyToAdd = 'space';
-                }
-
-                if (!isValidKey(keyToAdd)) {
-                    return;
-                }
-
-                setKeysPressed(prevKeys => {
-                    const newKeys = new Set(prevKeys);
-                    if (newKeys.size < 3) {
-                        newKeys.add(keyToAdd.toLowerCase());
-                        setKeyCombination(Array.from(newKeys).join('+'));
-                    }
-                    return newKeys;
-                });
+            if (inputError) { setInputError(''); }
+            if (clearOnNextKey) {
+                setKeyCombination('');
+                setClearOnNextKey(false);
             }
+
+            let keyToAdd = event.key;
+            // 映射为 robotjs 识别的格式
+            // 1. 符号转为对应数字
+            if (event.shiftKey && shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap]) {
+                keyToAdd = shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap];
+            }
+            // 2. 方向键
+            if (directionKeyMap[keyToAdd]) {
+                keyToAdd = directionKeyMap[keyToAdd];
+            }
+            // 3. 数字键添加 'numpad_' 前缀
+            if (!isNaN(Number(keyToAdd)) && keyToAdd.trim() !== '') {
+                keyToAdd = 'numpad_' + keyToAdd;
+            }
+            // 4. 处理特殊键，如空格键
+            if (keyToAdd === ' ') { keyToAdd = 'space'; }
+            // 处理完如果仍不匹配，则拒绝
+            if (!isValidKey(keyToAdd)) {
+                return;
+            }
+
+            setKeyCombination(prevCombination => {
+                let keys = prevCombination ? prevCombination.split('+') : [];
+
+                if (!keys.includes(keyToAdd.toLowerCase())) {
+                    keys.push(keyToAdd.toLowerCase());
+                }
+                // 最多支持三个键连续输入
+                if (keys.length > 3) {
+                    keys = keys.slice(-3);
+                }
+                return keys.join(keys.length > 1 ? '+' : '');
+            });
         };
 
         function handleKeyUp() {
@@ -244,8 +222,8 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         };
     }, [clearOnNextKey, inputError]);
 
-    const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
 
+    const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
     return (
         <div className="fixed inset-0 flex items-center justify-center">
             {/* 半透明遮罩 */}
@@ -254,7 +232,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="bg-white p-8 rounded-lg shadow-2xl relative max-w-3xl w-full">
                 {/* 关闭按钮 */}
                 <div className='mb-6'>
-                    <button onClick={() => onClose()} className="absolute top-4 right-24 text-gray-500 hover:text-yellow-500 focus:outline-none">
+                    <button onClick={() => onClose()} className="absolute top-4 right-24 text-gray-500 hover:text-yellow-900 focus:outline-none">
                         Cancel
                     </button>
                     <button onClick={handleConfirmApply} className="absolute top-4 right-4 text-gray-500 hover:text-teal-500 focus:outline-none">
@@ -283,7 +261,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <XMarkIcon />
                     </span>
 
-                    {/* 下拉框 */}
+                    {/* 下拉框（只开放给全局设置） */}
                     {software === "Global" && (
                         <>
                             <span className="absolute left-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-green-200 hover:bg-green-300 shadow-md"
@@ -310,7 +288,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             )}
                             {/* 鼠标子选项 */}
                             {isMouseOption && (
-                                <div className="absolute left-[168px] top-[230px] rounded-md shadow-lg bg-white z-10">
+                                <div className="absolute left-[168px] top-[50px] rounded-md shadow-lg bg-white z-10">
                                     <div className="py-1">
                                         {mouseOptions.map(option => (
                                             <a
@@ -326,7 +304,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             )}
                         </>
                     )}
-
                 </div>
 
                 {/* 左手手势 */}
@@ -338,14 +315,13 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <input
                                 type="checkbox"
                                 name="leftHandGesture"
-                                checked={selectedLeftHandIndex === index}
-                                onChange={() => handleLeftHandSelect(index)}
+                                checked={hands.left === extractGestureName(imagePaths.left[index])}
+                                onChange={() => handleHandSelect('left', extractGestureName(imagePaths.left[index]))}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
                     ))}
                 </div>
-
                 {/* 右手手势 */}
                 <p className="text-xl font-semibold text-center mt-8 text-teal-600">Right Hand</p>
                 <div className="flex flex-wrap justify-center gap-10">
@@ -356,8 +332,8 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                 type="checkbox"
                                 alt={img}
                                 name="rightHandGesture"
-                                checked={selectedRightHandIndex === index}
-                                onChange={() => handleRightHandSelect(index)}
+                                checked={hands.right === extractGestureName(imagePaths.right[index])}
+                                onChange={() => handleHandSelect('right', extractGestureName(imagePaths.right[index]))}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
