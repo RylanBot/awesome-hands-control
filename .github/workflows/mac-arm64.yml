@@ -1,0 +1,54 @@
+name: Build App for macOS arm64
+
+# 创建新发布时触发工作流
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: macos-latest-xlarge
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    # 缓存依赖项
+    - name: Cache Yarn Dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+          
+    # 安装 Node 相关环境
+    - name: Install Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18' 
+
+    - name: Install Yarn
+      run: npm install -g yarn
+
+    - name: Install Dependencies
+      run: yarn install
+      
+     # 打包项目
+    - name: Build
+      run: npm run build
+
+     # 获取项目版本号   
+    - name: Get Version
+      id: get_version
+      run: echo ::set-output name=version::$(node -p "require('./package.json').version")
+
+     # 上传 .dmg 安装包
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release/v${{ steps.get_version.outputs.version }}/Awesome Hands-Mac-${{ steps.get_version.outputs.version }}-Installer.dmg
+        asset_name: Awesome Hands-Mac-${{ steps.get_version.outputs.version }}-Installer.dmg
+        asset_content_type: application/x-apple-diskimage
