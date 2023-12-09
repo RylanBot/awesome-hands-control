@@ -65,32 +65,32 @@ const safeDOM = {
 function useLoading() {
   const className = `loaders-css__square-spin`
   const styleContent = `
-    @keyframes square-spin {
-      25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
-      50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
-      75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
-      100% { transform: perspective(100px) rotateX(0) rotateY(0); }
-    }
-    .${className} > div {
-      animation-fill-mode: both;
-      width: 50px;
-      height: 50px;
-      background: #fff;
-      animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
-    }
-    .app-loading-wrap {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #282c34;
-      z-index: 9;
-    }
-        `
+        @keyframes square-spin {
+          25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
+          50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
+          75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
+          100% { transform: perspective(100px) rotateX(0) rotateY(0); }
+        }
+        .${className} > div {
+          animation-fill-mode: both;
+          width: 50px;
+          height: 50px;
+          background: #fff;
+          animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+        }
+        .app-loading-wrap {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #282c34;
+          z-index: 9;
+        }
+            `
   const oStyle = document.createElement('style')
   const oDiv = document.createElement('div')
 
@@ -174,5 +174,5 @@ contextBridge.exposeInMainWorld('controlApi', {
   }
   ),
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },
-  triggerMouse: (deltaCoordinates: { x: number; y: number }, isLeftHand: string) => { ipcRenderer.send('triggerMouse', deltaCoordinates, isLeftHand); },
+  triggerMouse: (deltaCoordinates: { x: number, y: number }, isLeftHand: string) => { ipcRenderer.send('triggerMouse', deltaCoordinates, isLeftHand); },
 });

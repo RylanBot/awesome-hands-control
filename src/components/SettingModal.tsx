@@ -18,14 +18,9 @@ const keyboardKeys = [
 
 // 全局设置的特定操作
 const controlKeys = [
-    'mouse_click', 'mouse_double_click',
+    'mouse_click (right)',
     'audio_vol_down', 'audio_vol_up', 'audio_pause',
     'audio_mute', 'audio_prev', 'audio_next'
-];
-
-// 鼠标子选项
-const mouseOptions = [
-    'left', 'right', 'middle',
 ];
 
 // 方向键映射
@@ -55,42 +50,23 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [inputError, setInputError] = useState('');
     // 下拉清单
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    // 鼠标子选项
-    const [isMouseOption, setIsMouseOption] = useState(false);
-    // 绑定的全局设置的特定操作
-    const [controlKey, setControlKey] = useState('');
     // 手势绑定
     const [hands, setHands] = useState({ left: '', right: '' });
 
     // 下拉菜单开关
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-    const toggleMouseOption = () => setIsMouseOption(!isMouseOption);
 
     // 输入框激活
     function handleInputClick() {
         if (isDropdownOpen) { setIsDropdownOpen(false); }
-        if (isMouseOption) { setIsMouseOption(false); }
+        if (inputError) { setInputError('') }
     };
 
     // 下拉菜单选择操作
     function selectKeyFromDropdown(key: string) {
-        if (key === 'mouse_click' || key === 'mouse_double_click') {
-            toggleMouseOption()
-            setControlKey(key);
-        } else {
-            setKeyCombination(key);
-            toggleDropdown();
-            if (isMouseOption) { toggleMouseOption() };
-        }
-    };
-
-    // 添加鼠标子选项
-    function handleMouseOptionSelect(option: string) {
-        setKeyCombination(`${controlKey} (${option})`);
-        setControlKey('');
-        toggleMouseOption();
+        setKeyCombination(key);
         toggleDropdown();
-    }
+    };
 
     // 手势选择
     function handleHandSelect(handType: 'left' | 'right', gestureName: string) {
@@ -265,10 +241,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     {software === "Global" && (
                         <>
                             <span className="absolute left-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-green-200 hover:bg-green-300 shadow-md"
-                                onClick={() => {
-                                    toggleDropdown();
-                                    if (isMouseOption) { toggleMouseOption() }
-                                }}>
+                                onClick={() => { toggleDropdown() }}>
                                 <ChevronDownIcon />
                             </span>
                             {isDropdownOpen && (
@@ -281,22 +254,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                             >
                                                 {key}
-                                            </a>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            {/* 鼠标子选项 */}
-                            {isMouseOption && (
-                                <div className="absolute left-[168px] top-[50px] rounded-md shadow-lg bg-white z-10">
-                                    <div className="py-1">
-                                        {mouseOptions.map(option => (
-                                            <a
-                                                key={option}
-                                                onClick={() => handleMouseOptionSelect(option)}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                                            >
-                                                {option}
                                             </a>
                                         ))}
                                     </div>

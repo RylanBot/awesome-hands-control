@@ -365,14 +365,9 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
 // 模拟键盘输入
 ipcMain.on('triggerShortcut', (_, shortcut: string) => {
   try {
-    // 检测是否为鼠标操作  
-    if (shortcut.includes('mouse_click') || shortcut.includes('mouse_double_click')) {
-      const mouseButtonMatch = shortcut.match(/\(([^)]+)\)/);
-      if (mouseButtonMatch) {
-        const mouseButton: string = mouseButtonMatch[1];
-        const isDoubleClick = shortcut.includes('mouse_double_click');
-        robot.mouseClick(mouseButton, isDoubleClick);
-      }
+    // 检测是否为鼠标操作（右单击）
+    if (shortcut === 'mouse_click (right)') {
+      robot.mouseClick('right', false);
     } else {
       // 处理键盘快捷键
       const keys = shortcut.split('+');
@@ -392,20 +387,59 @@ ipcMain.on('triggerShortcut', (_, shortcut: string) => {
 })
 
 // 处理鼠标移动
-ipcMain.on('triggerMouse', (_, delta, isLeftHand) => {
+ipcMain.on('triggerMouse', (_, delta: { x: number, y: number }, isLeftHand) => {
   try {
     if (isLeftHand) {
       // 左手触发滚轮
       robot.scrollMouse(0, delta.y / 2);
     } else {
       // 右手触发鼠标光标
-      const mouse = robot.getMousePos();
-      robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
+      processMouseCursor(delta)
     }
   } catch (error) {
     log.error("triggerMouse", error);
   }
-})
+});
+
+let lastMousePosition = { x: 0, y: 0 };
+let clickTimer: NodeJS.Timeout | null = null;
+let doubleClickTimer: NodeJS.Timeout | null = null;
+function processMouseCursor(delta: { x: number, y: number }) {
+  const mouse = robot.getMousePos();
+  robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
+
+  // 如果鼠标位置变化，则重置定时器
+  if (lastMousePosition.x !== mouse.x || lastMousePosition.y !== mouse.y) {
+    lastMousePosition = { x: mouse.x, y: mouse.y };
+    resetTimers();
+  }
+
+  // 停留两秒触发左单击
+  if (!clickTimer) {
+    clickTimer = setTimeout(() => {
+      robot.mouseClick('left', false);
+      resetTimers();
+    }, 2000);
+  }
+
+  // 停留四秒触发左双击
+  if (!doubleClickTimer) {
+    doubleClickTimer = setTimeout(() => {
+      robot.mouseClick('left', true);
+      resetTimers();
+    }, 4000);
+  }
+}
+function resetTimers() {
+  if (clickTimer) {
+    clearTimeout(clickTimer);
+    clickTimer = null;
+  }
+  if (doubleClickTimer) {
+    clearTimeout(doubleClickTimer);
+    doubleClickTimer = null;
+  }
+}
 
 // 打开外部链接
 ipcMain.on('openExternalLink', (_, url) => {

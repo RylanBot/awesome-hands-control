@@ -12,8 +12,8 @@ const GlobalSetting: React.FC = () => {
     {/* 暂不开放修改权限 */ }
     return (
         <>
-            <SettingCard shortcut="Mouse Wheel" leftHand='Pointing_Up' disable />
-            <SettingCard shortcut="Mouse Cursor" rightHand='Pointing_Up' disable />
+            <SettingCard shortcut="Mouse Scroll" leftHand='Pointing_Up' disable />
+            <SettingCard shortcut="Mouse Cursor" leftHand='NOTE' rightHand='Pointing_Up' disable />
         </>
 
     );
