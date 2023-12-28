@@ -27,7 +27,7 @@ declare global {
     ipcRenderer: import('electron').IpcRenderer
     // 对应 preload 的 api Key
     windowApi: WindowApi
-    configApi: configApi
+    configApi: ConfigApi
     controlApi: ControlApi
   }
   type AppConfig = {
@@ -50,7 +50,7 @@ interface WindowApi {
   openExternalLink: (url: string) => void;
 }
 
-interface configApi {
+interface ConfigApi {
   initialConfig: () => Promise<AppConfig[]>;
   updateAppConfig: (appName: string, base64Icon: string) => Promise<boolean>
   deleteAppConfig: (appName: string) => Promise<boolean>;
