@@ -148,8 +148,9 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 setClearOnNextKey(false);
             }
 
-            let keyToAdd = event.key;
             // 映射为 robotjs 识别的格式
+            let keyToAdd = event.key;
+
             // 1. 符号转为对应数字
             if (event.shiftKey && shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap]) {
                 keyToAdd = shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap];
@@ -162,8 +163,10 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             if (!isNaN(Number(keyToAdd)) && keyToAdd.trim() !== '') {
                 keyToAdd = 'numpad_' + keyToAdd;
             }
-            // 4. 处理特殊键，如空格键
+            // 4. 处理特殊键
             if (keyToAdd === ' ') { keyToAdd = 'space'; }
+            if (keyToAdd === 'Meta') { keyToAdd = 'command'; }
+            
             // 处理完如果仍不匹配，则拒绝
             if (!isValidKey(keyToAdd)) {
                 return;
