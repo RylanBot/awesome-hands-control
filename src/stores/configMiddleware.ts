@@ -10,7 +10,7 @@ interface MiddlewareState {
   };
 }
 
-export const configMiddleware: Middleware<{}, MiddlewareState> = store => next => async action => {
+export const configMiddleware: Middleware<unknown, MiddlewareState> = store => next => async action => {
 
   const previousLastUpdated = store.getState().config.lastUpdated;
   next(action);

@@ -30,12 +30,18 @@ declare global {
     configApi: ConfigApi
     controlApi: ControlApi
   }
+  type Shortcut = {
+    keyCombination: string;
+    gestureRight?: string;
+    gestureLeft?: string;
+    enabled: boolean;
+    removable: boolean;
+  }
   type AppConfig = {
     name: string;
     icon: string;
-    shortcut: {
-      [shortcutName: string]: [string, string];
-    };
+    shortcuts: Shortcut[];
+    version: number;
   }
 }
 
@@ -54,8 +60,9 @@ interface ConfigApi {
   initialConfig: () => Promise<AppConfig[]>;
   updateAppConfig: (appName: string, base64Icon: string) => Promise<boolean>
   deleteAppConfig: (appName: string) => Promise<boolean>;
-  updateShortcutConfig: (appName: string, shortcut: string, leftHand: string, rightHand: string) => Promise<boolean>;
-  deleteShortcutConfig: (appName: string, shortcut: string) => Promise<boolean>;
+  updateShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
+  deleteShortcutConfig: (appName: string, keyCombination: string) => Promise<boolean>;
+  toggleShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
   getBase64Icon: (appPath: string) => Promise<string>
   getProjectVersion: () => Promise<string>;
 }

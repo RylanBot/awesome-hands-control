@@ -4,8 +4,8 @@
  * 但渲染图片的时候记得手动添加前缀）
  */
 
-const fs = require('fs')
-const path = require('path')
+import * as fs from "fs";
+import {basename} from "path";
 
 const directoryPath = path.join(__dirname, '../../public/images/hands') // 图片路径
 
@@ -21,12 +21,12 @@ fs.readdir(directoryPath, (err, files) => {
   const groupedFiles = {
     left: files
       .filter(file => /_Left\.png$/i.test(file) && !excludeFiles.includes(file))
-      .map(file => path.basename(file, '.png')), // 移除文件后缀
+      .map(file => basename(file, '.png')), // 移除文件后缀
     right: files
       .filter(
         file => /_Right\.png$/i.test(file) && !excludeFiles.includes(file)
       )
-      .map(file => path.basename(file, '.png'))
+      .map(file => basename(file, '.png'))
   }
 
   // 写入JSON文件

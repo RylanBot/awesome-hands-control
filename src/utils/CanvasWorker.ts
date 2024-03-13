@@ -95,4 +95,4 @@ function drawHand(handLandmarks: Landmark[], canvasCtx: OffscreenCanvasRendering
       canvasCtx.stroke();
     }
   });
-};
+}

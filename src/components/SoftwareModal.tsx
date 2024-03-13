@@ -24,14 +24,14 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     function displayToast(msg: string) {
         setMessage(msg);
         setShowToast(true);
-    };
+    }
 
     function handleAddSoftwareClick() {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
         fileInputRef.current?.click();
-    };
+    }
 
     async function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0] as InputFile | undefined
@@ -76,7 +76,7 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             dispatch(updateTimestamp());
         }
         onClose();
-    };
+    }
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50">

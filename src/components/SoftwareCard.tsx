@@ -16,17 +16,17 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     function handleDeleteClick() {
         setShowDeleteConfirm(true);
-    };
+    }
     function handleCancelDelete() {
         setShowDeleteConfirm(false);
-    };
+    }
     async function handleConfirmDelete() {
         const deleteSuccess = await window.configApi.deleteAppConfig(name);
         if (deleteSuccess) {
             dispatch(updateTimestamp());
         }
         setShowDeleteConfirm(false);
-    };
+    }
 
     return (
         <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center">

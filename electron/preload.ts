@@ -3,7 +3,7 @@
     但在某些情况下，你可能需要在渲染进程中使用一些 Electron 的功能。
     此时，preload.js 作为一个中间者或桥梁，可以在此脚本中安全地暴露某些功能给渲染进程。*/
 
-const { contextBridge, ipcRenderer } = require('electron');
+import { ipcRenderer, contextBridge } from 'electron'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
@@ -154,11 +154,14 @@ contextBridge.exposeInMainWorld('configApi', {
   deleteAppConfig: async (appName: string) => {
     return ipcRenderer.invoke('deleteAppConfig', appName);
   },
-  updateShortcutConfig: async (appName: string, shortcut: string, leftHand: string, rightHand: string) => {
-    return ipcRenderer.invoke('updateShortcutConfig', appName, shortcut, leftHand, rightHand);
+  updateShortcutConfig: async (appName: string, shortcut: Shortcut) => {
+    return ipcRenderer.invoke('updateShortcutConfig', appName, shortcut);
   },
-  deleteShortcutConfig: async (appName: string, shortcut: string) => {
-    return ipcRenderer.invoke('deleteShortcutConfig', appName, shortcut);
+  deleteShortcutConfig: async (appName: string, keyCombination: string) => {
+    return ipcRenderer.invoke('deleteShortcutConfig', appName, keyCombination);
+  },
+  toggleShortcutConfig: async (appName: string, shortcut: Shortcut) => {
+    return ipcRenderer.invoke('toggleShortcutConfig', appName, shortcut);
   },
   getBase64Icon: async (appPath: string) => {
     return ipcRenderer.invoke('getBase64Icon', appPath);

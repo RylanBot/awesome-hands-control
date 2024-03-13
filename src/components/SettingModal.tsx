@@ -6,15 +6,7 @@ import { useParams } from 'react-router-dom';
 import { updateTimestamp } from '../stores/configSlice';
 import { RootState } from '../stores/redux';
 import imagePaths from '../utils/hands-paths.json';
-
-// 允许接受的键盘输入按键
-const keyboardKeys = [
-    'backspace', 'delete', 'tab', 'up', 'down', 'right', 'left',
-    'pageup', 'pagedown', 'command', 'alt', 'control', 'shift', 'space',
-    'numpad_0', 'numpad_1', 'numpad_2', 'numpad_3', 'numpad_4',
-    'numpad_5', 'numpad_6', 'numpad_7', 'numpad_8', 'numpad_9',
-    'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10', 'f11', 'f12',
-];
+import {KeyboardEventKeyCodeToRobotJSKeyCode} from "@/utils/KeyboardUtils";
 
 // 全局设置的特定操作
 const controlKeys = [
@@ -22,20 +14,6 @@ const controlKeys = [
     'audio_vol_down', 'audio_vol_up', 'audio_pause',
     'audio_mute', 'audio_prev', 'audio_next'
 ];
-
-// 方向键映射
-const directionKeyMap: { [key: string]: string } = {
-    'ArrowUp': 'up',
-    'ArrowDown': 'down',
-    'ArrowLeft': 'left',
-    'ArrowRight': 'right'
-};
-
-// 将 Shift + 符号映射回数字
-const shiftNumKeyMap: { [key: string]: string } = {
-    '!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '^': '6', '&': '7', '*': '8', '(': '9', ')': '0'
-};
-
 const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { software } = useParams();
     const dispatch = useDispatch();
@@ -60,13 +38,13 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     function handleInputClick() {
         if (isDropdownOpen) { setIsDropdownOpen(false); }
         if (inputError) { setInputError('') }
-    };
+    }
 
     // 下拉菜单选择操作
     function selectKeyFromDropdown(key: string) {
         setKeyCombination(key);
         toggleDropdown();
-    };
+    }
 
     // 手势选择
     function handleHandSelect(handType: 'left' | 'right', gestureName: string) {
@@ -103,7 +81,15 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             return;
         }
 
-        const applySuccess = await window.configApi.updateShortcutConfig(software!, keyCombination, hands.left, hands.right)
+        const shortcut: Shortcut = {
+            keyCombination,
+            enabled: true,
+            gestureLeft: hands.left,
+            gestureRight: hands.right,
+            removable: true
+        }
+
+        const applySuccess = await window.configApi.updateShortcutConfig(software!, shortcut);
         if (applySuccess) {
             dispatch(updateTimestamp());
         }
@@ -115,9 +101,9 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     function checkDuplicateSetting(): boolean {
         const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === software);
         if (currentConfig) {
-            const shortcuts = currentConfig.shortcut;
-            for (const [shortcut, [left, right]] of Object.entries(shortcuts)) {
-                if (shortcut === keyCombination || (left === hands.left && right === hands.right)) {
+            const shortcuts = currentConfig.shortcuts;
+            for (const shortcut of shortcuts) {
+                if (shortcut.gestureLeft === hands.left && shortcut.gestureRight === hands.right) {
                     return true;
                 }
             }
@@ -126,57 +112,27 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         return false;
     }
 
-    // 支持的键盘输入
-    function isValidKey(key: string): boolean {
-        // 检查 key 是否是单个字母
-        if (key.length === 1 && key.match(/[a-z]/i)) {
-            return true;
-        }
-
-        return keyboardKeys.includes(key.toLowerCase());
-    };
-
     // 处理键盘输入
     useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
+        const handleKeyDown = async (event: KeyboardEvent) => {
             if (document.activeElement !== inputRef.current) return;
             event.preventDefault();
 
-            if (inputError) { setInputError(''); }
+            if (inputError) {
+                setInputError('');
+            }
             if (clearOnNextKey) {
                 setKeyCombination('');
                 setClearOnNextKey(false);
             }
 
-            // 映射为 robotjs 识别的格式
-            let keyToAdd = event.key;
-
-            // 1. 符号转为对应数字
-            if (event.shiftKey && shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap]) {
-                keyToAdd = shiftNumKeyMap[keyToAdd as keyof typeof shiftNumKeyMap];
-            }
-            // 2. 方向键
-            if (directionKeyMap[keyToAdd]) {
-                keyToAdd = directionKeyMap[keyToAdd];
-            }
-            // 3. 数字键添加 'numpad_' 前缀
-            if (!isNaN(Number(keyToAdd)) && keyToAdd.trim() !== '') {
-                keyToAdd = 'numpad_' + keyToAdd;
-            }
-            // 4. 处理特殊键
-            if (keyToAdd === ' ') { keyToAdd = 'space'; }
-            if (keyToAdd === 'Meta') { keyToAdd = 'command'; }
-            
-            // 处理完如果仍不匹配，则拒绝
-            if (!isValidKey(keyToAdd)) {
-                return;
-            }
+            const keyToAdd = await KeyboardEventKeyCodeToRobotJSKeyCode(event.code);
 
             setKeyCombination(prevCombination => {
                 let keys = prevCombination ? prevCombination.split('+') : [];
 
-                if (!keys.includes(keyToAdd.toLowerCase())) {
-                    keys.push(keyToAdd.toLowerCase());
+                if (!keys.includes(keyToAdd)) {
+                    keys.push(keyToAdd);
                 }
                 // 最多支持三个键连续输入
                 if (keys.length > 3) {
@@ -190,7 +146,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             if (document.activeElement === inputRef.current) {
                 setClearOnNextKey(true);
             }
-        };
+        }
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
