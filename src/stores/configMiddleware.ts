@@ -1,6 +1,3 @@
-/*  引入一个中间件，全局监听 Redux 中的时间戳，
-    并在其变化时重新获取 electron-store 的配置*/
-
 import { Middleware } from '@reduxjs/toolkit';
 import { getLocalConfig } from './configSlice';
 
@@ -10,7 +7,11 @@ interface MiddlewareState {
   };
 }
 
-export const configMiddleware: Middleware<{}, MiddlewareState> = store => next => async action => {
+/**
+ *  引入一个中间件，全局监听 Redux 中的时间戳，
+ *  并在其变化时重新获取 electron-store 的配置
+ */
+export const configMiddleware: Middleware<unknown, MiddlewareState> = store => next => async action => {
 
   const previousLastUpdated = store.getState().config.lastUpdated;
   next(action);

@@ -1,8 +1,10 @@
-import { TrashIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { updateTimestamp } from '../stores/configSlice';
+
+import { useDispatch } from 'react-redux';
+import { updateTimestamp } from '@/stores/configSlice';
+
+import { TrashIcon } from '@heroicons/react/24/solid';
 
 interface SoftwareCardProps {
     icon: string;
@@ -14,19 +16,22 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
     const dispatch = useDispatch();
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
     function handleDeleteClick() {
         setShowDeleteConfirm(true);
-    };
+    }
+    
     function handleCancelDelete() {
         setShowDeleteConfirm(false);
-    };
+    }
+
     async function handleConfirmDelete() {
         const deleteSuccess = await window.configApi.deleteAppConfig(name);
         if (deleteSuccess) {
             dispatch(updateTimestamp());
         }
         setShowDeleteConfirm(false);
-    };
+    }
 
     return (
         <div className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center">
@@ -89,4 +94,3 @@ const GlobalSoftwareCard: React.FC = () => {
 }
 
 export { GlobalSoftwareCard, SoftwareCard };
-

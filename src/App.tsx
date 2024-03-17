@@ -1,13 +1,15 @@
+import { useEffect } from "react";
 import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
-import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { CameraWindowBar, MainWindowBar } from "./components/WindowBar";
-import Dashboard from "./pages/Dashboard";
-import EmptySlot from "./pages/EmptySlot";
-import GestureRecognition from "./pages/GestureRecognition";
-import SettingPage from "./pages/SettingPage";
-import { getLocalConfig } from "./stores/configSlice";
+import { getLocalConfig } from "@/stores/configSlice";
+
+import { CameraWindowBar, MainWindowBar } from "@/components/WindowBar";
+
+import Dashboard from "@/pages/Dashboard";
+import EmptySlot from "@/pages/EmptySlot";
+import GestureRecognition from "@/pages/GestureRecognition";
+import SettingPage from "@/pages/SettingPage";
 
 const MainLayout = () => {
   return (

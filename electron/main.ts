@@ -1,15 +1,18 @@
-/* 主进程文件，负责与操作系统的交互。 */
+/* 主进程文件，负责与操作系统的交互。*/
 
-import { BrowserWindow, Menu, Tray, app, ipcMain, screen, shell } from 'electron';
-import { promises } from 'node:fs';
-import path from 'node:path';
+import { app, BrowserWindow, ipcMain, Menu, screen, shell, Tray } from 'electron';
+import log from 'electron-log/main';
+import ElectronStore from "electron-store";
 
-const fs = require('fs');
-const Store = require('electron-store');
-const log = require('electron-log');
-const robot = require('robotjs');
-const activeWin = require('active-win');
-const icon = require('file-icon-extractor');
+import { readFileSync } from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import robot, { keys } from '@hurdlegroup/robotjs';
+import activeWindow from "active-win";
+
+globalThis.__filename = fileURLToPath(import.meta.url)
+globalThis.__dirname = dirname(__filename)
 
 // 指向 dist-electron
 process.env.DIST = path.join(__dirname, '../dist')
@@ -38,7 +41,7 @@ function createMainWindow() {
   mainWindow = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${iconSuffix}`),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false, // 是否在渲染进程中启用 Node.js 集成，即 *.tsx 能直接访问系统接口
       contextIsolation: true, // 是否为 Electron 的 API 和页面的 JS 上下文提供隔离的环境
       backgroundThrottling: false // 确保窗口最小化或隐藏后依旧能正常活动
@@ -50,7 +53,6 @@ function createMainWindow() {
     resizable: false
   })
 
-
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/main`);
     // mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/`);
@@ -58,7 +60,6 @@ function createMainWindow() {
     // win.loadFile('dist/index.html')
     mainWindow.loadFile(path.join(process.env.DIST!, 'index.html'))
   }
-
 
   // Test active push message to Renderer-process.
   // mainWindow.webContents.on('did-finish-load', () => {
@@ -68,7 +69,6 @@ function createMainWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.webContents.send('identifyWindow', 'main');
   })
-
 }
 
 // 新增一个自定义窗口
@@ -80,7 +80,7 @@ function createCameraWindow() {
   cameraWindow = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${iconSuffix}`),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false,
       contextIsolation: true,
     },
@@ -188,26 +188,70 @@ app.whenReady().then(async () => {
 }
 )
 
-const store = new Store({
+const store = new ElectronStore({
   name: 'awesome-hands-config',
   fileExtension: 'json',
 });
 
 let localConfigs: AppConfig[] = [];
 async function loadInitialConfig() {
-  if (!fs.existsSync(store.path)) {
-    const defaultConfig: AppConfig[] = [
-      {
-        name: 'Global',
-        icon: "",
-        shortcut: {}
+  const DEFAULT_CONFIG: AppConfig[] = [
+    {
+      name: 'Global',
+      icon: "",
+      shortcuts: [
+        {
+          keyCombination: "Mouse Scroll",
+          gestureLeft: "Pointing_Up",
+          gestureRight: "",
+          enabled: true,
+          removable: false,
+        },
+        {
+          keyCombination: "Mouse Cursor",
+          gestureLeft: "NOTE",
+          gestureRight: "Pointing_Up",
+          enabled: true,
+          removable: false,
+        },
+      ],
+      version: 2
+    }
+  ];
+
+  localConfigs = convertConfigFormat(store.get('apps'));
+  if (!localConfigs.length) localConfigs = DEFAULT_CONFIG;
+
+  store.set('apps', localConfigs);
+}
+
+function convertConfigFormat(config: any): AppConfig[] {
+  if (Array.isArray(config)) {
+    const resConfig: AppConfig[] = [];
+    (config as Array<any>).forEach((el) => {
+      if (el.hasOwnProperty("version") && el.version == 2) resConfig.push(el as AppConfig);
+      else if (el.hasOwnProperty("name") && el.hasOwnProperty("icon") && el.hasOwnProperty("shortcut")) {
+        const shortcuts: Shortcut[] = [];
+        for (const key in el.shortcut) {
+          if (Object.prototype.hasOwnProperty.call(el.shortcut, key)) {
+            const keyCombination = key;
+            const [gestureLeft, gestureRight] = el.shortcut[key];
+            shortcuts.push({
+              keyCombination,
+              gestureLeft,
+              gestureRight,
+              enabled: true,
+              removable: true
+            });
+          }
+        }
+        if (shortcuts.length)
+          resConfig.push({ name: el.name, icon: el.icon, shortcuts, version: 2 });
       }
-    ];
-    store.set('apps', defaultConfig);
-    localConfigs = defaultConfig;
-  } else {
-    localConfigs = store.get('apps'); // 确保总是返回数组
+    })
+    return resConfig;
   }
+  return [];
 }
 
 // ----------  以上是基本框架，以下是添加的具体功能 ----------
@@ -312,11 +356,12 @@ ipcMain.handle('initialConfig', async () => {
 })
 
 // 添加软件
-ipcMain.handle('updateAppConfig', async (_, appName, base64Icon) => {
+ipcMain.handle('updateAppConfig', async (_, appName: string, base64Icon: string) => {
   const newApp: AppConfig = {
     name: appName,
     icon: base64Icon,
-    shortcut: {}
+    shortcuts: [],
+    version: 2
   };
   try {
     localConfigs.push(newApp);
@@ -338,11 +383,11 @@ ipcMain.handle('deleteAppConfig', async (_, appName) => {
 });
 
 // 添加软件绑定的快捷键
-ipcMain.handle('updateShortcutConfig', async (_, appName, shortcut, leftHand, rightHand) => {
+ipcMain.handle('updateShortcutConfig', async (_, appName: string, shortcut: Shortcut) => {
   const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
   if (index !== -1) {
     const appConfig = localConfigs[index];
-    appConfig.shortcut[shortcut] = [leftHand, rightHand];
+    appConfig.shortcuts.push(shortcut)
     localConfigs[index] = appConfig;
     store.set('apps', localConfigs);
     return true;
@@ -350,37 +395,53 @@ ipcMain.handle('updateShortcutConfig', async (_, appName, shortcut, leftHand, ri
 })
 
 // 删除快捷键
-ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut) => {
+ipcMain.handle('deleteShortcutConfig', async (_, appName, keyCombination: string) => {
   const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
   if (index !== -1) {
     const appConfig = localConfigs[index];
-    if (appConfig.shortcut.hasOwnProperty(shortcut)) {
-      delete appConfig.shortcut[shortcut];
-      store.set('apps', localConfigs);
-      return true;
-    }
+    appConfig.shortcuts = appConfig.shortcuts.filter((shortcut) => shortcut.keyCombination !== keyCombination);
+    localConfigs[index] = appConfig;
+    store.set('apps', localConfigs);
+    return true;
+  }
+})
+
+ipcMain.handle('toggleShortcutConfig', async (_, appName: string, shortcut: Shortcut) => {
+  const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
+  if (index !== -1) {
+    const appConfig = localConfigs[index];
+    shortcut.enabled = !shortcut.enabled;
+    appConfig.shortcuts = appConfig.shortcuts.map((el) => el.keyCombination === shortcut.keyCombination ? shortcut : el);
+    localConfigs[index] = appConfig;
+    store.set('apps', localConfigs);
+    return true;
   }
 })
 
 // 模拟键盘输入
-ipcMain.on('triggerShortcut', (_, shortcut: string) => {
+ipcMain.on('triggerShortcut', (_, keyCombination: string) => {
+  const SPECIAL_SHORTCUTS = new Map<string, () => void>([
+    ["mouse_click (right)", () => robot.mouseClick('right', false)],
+    ["Mouse Scroll", () => { }],
+    ["Mouse Cursor", () => { }],
+  ])
   try {
-    // 检测是否为鼠标操作（右单击）
-    if (shortcut === 'mouse_click (right)') {
-      robot.mouseClick('right', false);
-    } else {
-      // 处理键盘快捷键
-      const keys = shortcut.split('+');
-      const validModifiers = ['alt', 'command', 'control', 'shift', 'win'];
-      const modifiers = keys.filter((key: string) => validModifiers.includes(key));
-      const nonModifierKeys = keys.filter((key: string) => !validModifiers.includes(key));
-      nonModifierKeys.forEach((key: string, index: number) => {
-        robot.keyToggle(key, 'down', modifiers);
-        if (index === nonModifierKeys.length - 1) {
-          nonModifierKeys.forEach((key: string) => robot.keyToggle(key, 'up', modifiers));
-        }
-      });
+    const shortcutCallback = SPECIAL_SHORTCUTS.get(keyCombination);
+    if (shortcutCallback) {
+      shortcutCallback();
+      return;
     }
+    // 处理键盘快捷键
+    const keys = keyCombination.split('+') as keys[];
+    const validModifiers = ['alt', 'right_alt', 'command', 'control', 'left_control', 'right_control', 'shift', 'right_shift', 'win'];
+    const modifiers = keys.filter((key: string) => validModifiers.includes(key));
+    const nonModifierKeys = keys.filter((key: string) => !validModifiers.includes(key));
+    nonModifierKeys.forEach((key: keys, index: number) => {
+      robot.keyToggle(key, 'down', modifiers);
+      if (index === nonModifierKeys.length - 1) {
+        nonModifierKeys.forEach((key: keys) => robot.keyToggle(key, 'up', modifiers));
+      }
+    });
   } catch (error) {
     log.error("triggerShortcut", error);
   }
@@ -391,7 +452,7 @@ ipcMain.on('triggerMouse', (_, delta: { x: number, y: number }, isLeftHand) => {
   try {
     if (isLeftHand) {
       // 左手触发滚轮
-      robot.scrollMouse(0, delta.y / 2);
+      robot.scrollMouse(delta.x / 2, delta.y / 2);
     } else {
       // 右手触发鼠标光标
       processMouseCursor(delta)
@@ -399,14 +460,15 @@ ipcMain.on('triggerMouse', (_, delta: { x: number, y: number }, isLeftHand) => {
   } catch (error) {
     log.error("triggerMouse", error);
   }
-});
+}
+);
 
 let lastMousePosition = { x: 0, y: 0 };
 let clickTimer: NodeJS.Timeout | null = null;
 let doubleClickTimer: NodeJS.Timeout | null = null;
 function processMouseCursor(delta: { x: number, y: number }) {
   const mouse = robot.getMousePos();
-  robot.moveMouse(mouse.x + delta.x, mouse.y + delta.y);
+  robot.moveMouseSmooth(mouse.x + delta.x, mouse.y + delta.y, 1);
 
   // 如果鼠标位置变化，则重置定时器
   if (lastMousePosition.x !== mouse.x || lastMousePosition.y !== mouse.y) {
@@ -456,7 +518,7 @@ function runWindowMonitor() {
         return;
       }
 
-      const windowInfo = await activeWin();
+      const windowInfo = await activeWindow();
       if (!windowInfo || !windowInfo.owner) return;
 
       const processName = windowInfo.owner.name;
@@ -475,44 +537,9 @@ function runWindowMonitor() {
 
 // 提取软件的 icon
 ipcMain.handle('getBase64Icon', async (_, appPath) => {
-  let appName;
-  if (appPath.endsWith('.EXE') || appPath.endsWith('.exe')) {
-    // Windows 路径处理
-    const regex = /([^\\]+)\.(EXE|exe)$/i;
-    const matches = appPath.match(regex);
-    appName = matches[1];
-  } else {
-    return null;
-  }
-
-  const cachePath = app.getPath('temp');
-  const iconPath = path.join(cachePath, `${appName}.png`);
   try {
-    await icon.extract(appPath, cachePath);
-
-    const maxWaitTime = 3000; // 最大等待时间
-    const waitInterval = 500;  // 每次检查的间隔时间
-    let waitedTime = 0;
-    while (waitedTime < maxWaitTime) {
-      try {
-        // 确定文件是否生成
-        await promises.access(iconPath);
-        break;
-      } catch {
-        await new Promise(resolve => setTimeout(resolve, waitInterval));
-        waitedTime += waitInterval;
-      }
-    }
-    if (waitedTime >= maxWaitTime) {
-      log.error("getIconBase64: Icon generation timeout");
-    }
-
-    // 转换为 base64
-    const iconData = await promises.readFile(iconPath);
-    const iconBase64 = iconData.toString('base64');
-    // 删除缓存图标
-    await promises.unlink(iconPath);
-    return iconBase64;
+    const icon = await app.getFileIcon(appPath, { size: "large" });
+    return icon.toPNG().toString("base64");
   } catch (err) {
     log.error("getIconBase64: ", err);
   }
@@ -521,6 +548,6 @@ ipcMain.handle('getBase64Icon', async (_, appPath) => {
 ipcMain.handle('getProjectVersion', () => {
   const appPath = app.getAppPath();
   const packageJsonPath = path.join(appPath, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
   return packageJson.version;
 });

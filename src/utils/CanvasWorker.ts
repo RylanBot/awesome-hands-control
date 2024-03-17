@@ -1,8 +1,9 @@
-/*  基于 Web Worker + OffscreenCanvas 把 Canvas 从主线程剥离
-    实现多线程渲染，优化动画卡顿 */
-
 import { GestureRecognizerResult, Landmark } from "@mediapipe/tasks-vision";
 
+/**
+ * 基于 Web Worker + OffscreenCanvas 把 Canvas 从主线程剥离
+ * 实现多线程渲染，优化动画卡顿
+ */
 let canvasCtx: OffscreenCanvasRenderingContext2D | null = null;
 
 self.onmessage = (message) => {
@@ -23,7 +24,6 @@ self.onmessage = (message) => {
     });
   }
 };
-
 
 function drawHand(handLandmarks: Landmark[], canvasCtx: OffscreenCanvasRenderingContext2D, isLeftHand: boolean) {
 
@@ -95,4 +95,4 @@ function drawHand(handLandmarks: Landmark[], canvasCtx: OffscreenCanvasRendering
       canvasCtx.stroke();
     }
   });
-};
+}

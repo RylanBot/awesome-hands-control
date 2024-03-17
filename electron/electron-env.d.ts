@@ -1,5 +1,7 @@
 /// <reference types="vite-plugin-electron/electron-env" />
 
+import { AppConfig, Shortcut } from '@/utils/types'
+
 declare namespace NodeJS {
   interface ProcessEnv {
     /**
@@ -21,20 +23,19 @@ declare namespace NodeJS {
   }
 }
 
-// Used in Renderer process, expose in `preload.ts`
 declare global {
   interface Window {
     ipcRenderer: import('electron').IpcRenderer
-    // 对应 preload 的 api Key
+    /*  对应 preload 的 api Key 
+        Used in Renderer process, expose in `preload.ts` */
     windowApi: WindowApi
     configApi: ConfigApi
     controlApi: ControlApi
   }
-  type AppConfig = {
-    name: string;
-    icon: string;
-    shortcut: {
-      [shortcutName: string]: [string, string];
+
+  interface Navigator {
+    keyboard: {
+      getLayoutMap: () => Map<string, string>;
     };
   }
 }
@@ -54,8 +55,9 @@ interface ConfigApi {
   initialConfig: () => Promise<AppConfig[]>;
   updateAppConfig: (appName: string, base64Icon: string) => Promise<boolean>
   deleteAppConfig: (appName: string) => Promise<boolean>;
-  updateShortcutConfig: (appName: string, shortcut: string, leftHand: string, rightHand: string) => Promise<boolean>;
-  deleteShortcutConfig: (appName: string, shortcut: string) => Promise<boolean>;
+  updateShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
+  deleteShortcutConfig: (appName: string, keyCombination: string) => Promise<boolean>;
+  toggleShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
   getBase64Icon: (appPath: string) => Promise<string>
   getProjectVersion: () => Promise<string>;
 }
