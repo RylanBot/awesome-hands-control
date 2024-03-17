@@ -1,8 +1,10 @@
-import { rmSync } from 'node:fs'
-import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import electron from 'vite-plugin-electron/simple'
+
+import { rmSync } from 'node:fs'
+import path from 'node:path'
+
 import pkg from './package.json'
 
 // https://vitejs.dev/config/
@@ -65,6 +67,7 @@ export default defineConfig(({ command }) => {
       }),
     ],
     server: process.env.VSCODE_DEBUG && (() => {
+      // @ts-ignore
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {
         host: url.hostname,

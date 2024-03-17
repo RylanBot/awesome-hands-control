@@ -1,5 +1,6 @@
-import { BookOpenIcon, CameraIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
+
+import { BookOpenIcon, CameraIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const IntroCard: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [version, setVersion] = useState("")

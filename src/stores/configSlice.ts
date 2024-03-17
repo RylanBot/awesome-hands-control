@@ -1,5 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
+import { AppConfig } from '@/utils/types';
+
 interface ConfigState {
   apps: AppConfig[];
   lastUpdated: number;
@@ -10,9 +12,8 @@ const initialState: ConfigState = {
   lastUpdated: Date.now(),
 };
 
-
 const configSlice = createSlice({
-  name: 'config', // 对应获取state时候需要添加的后缀（如state.config)
+  name: 'config', // 对应获取 state 时候需要添加的后缀（如 state.config)
   initialState,
   reducers: {
     // 根据 electron-store 返回的数据整个替换

@@ -1,10 +1,7 @@
-
-
-import { BarsArrowDownIcon, BarsArrowUpIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 
+import { BarsArrowDownIcon, BarsArrowUpIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
-// 主窗口
 const MainWindowBar: React.FC = () => {
     const windowName = 'main'
 
@@ -30,7 +27,7 @@ const MainWindowBar: React.FC = () => {
     );
 }
 
-// 摄像机窗口
+
 const CameraWindowBar: React.FC = () => {
     const windowName = 'camera'
 
@@ -61,10 +58,8 @@ const CameraWindowBar: React.FC = () => {
                 )}
             </button>
 
-            {/* 最小化后相机仍然开着，但窗口的代码不再被调用，无法识别 */}
             <button
                 className="btn-no-drag mr-5"
-                // onClick={() => window.windowApi.minimizeToTray()}
                 onClick={() => window.windowApi.minimizeToTaskbar(windowName)}
             >
                 <MinusIcon className='h-5 w-5 text-white' />

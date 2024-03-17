@@ -1,16 +1,19 @@
-/* 主进程文件，负责与操作系统的交互。 */
+/* 主进程文件，负责与操作系统的交互。*/
 
-import {app, BrowserWindow, ipcMain, Menu, screen, shell, Tray} from 'electron';
-import {existsSync, readFileSync} from 'node:fs';
-import path, {dirname} from 'node:path';
+import { app, BrowserWindow, ipcMain, Menu, screen, shell, Tray } from 'electron';
 import log from 'electron-log/main';
 import ElectronStore from "electron-store";
+
+import { readFileSync } from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import robot, { keys } from '@hurdlegroup/robotjs';
 import activeWindow from "active-win";
-import {fileURLToPath} from 'node:url';
-import robot, {keys} from '@hurdlegroup/robotjs';
 
 globalThis.__filename = fileURLToPath(import.meta.url)
 globalThis.__dirname = dirname(__filename)
+
 // 指向 dist-electron
 process.env.DIST = path.join(__dirname, '../dist')
 // 指向 public
@@ -50,7 +53,6 @@ function createMainWindow() {
     resizable: false
   })
 
-
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/main`);
     // mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/`);
@@ -58,7 +60,6 @@ function createMainWindow() {
     // win.loadFile('dist/index.html')
     mainWindow.loadFile(path.join(process.env.DIST!, 'index.html'))
   }
-
 
   // Test active push message to Renderer-process.
   // mainWindow.webContents.on('did-finish-load', () => {
@@ -68,7 +69,6 @@ function createMainWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.webContents.send('identifyWindow', 'main');
   })
-
 }
 
 // 新增一个自定义窗口
@@ -202,15 +202,15 @@ async function loadInitialConfig() {
       shortcuts: [
         {
           keyCombination: "Mouse Scroll",
-          gestureLeft:"Pointing_Up",
-          gestureRight:"",
+          gestureLeft: "Pointing_Up",
+          gestureRight: "",
           enabled: true,
           removable: false,
         },
         {
           keyCombination: "Mouse Cursor",
-          gestureLeft:"NOTE",
-          gestureRight:"Pointing_Up",
+          gestureLeft: "NOTE",
+          gestureRight: "Pointing_Up",
           enabled: true,
           removable: false,
         },
@@ -220,7 +220,7 @@ async function loadInitialConfig() {
   ];
 
   localConfigs = convertConfigFormat(store.get('apps'));
-  if(!localConfigs.length) localConfigs = DEFAULT_CONFIG;
+  if (!localConfigs.length) localConfigs = DEFAULT_CONFIG;
 
   store.set('apps', localConfigs);
 }
@@ -245,8 +245,8 @@ function convertConfigFormat(config: any): AppConfig[] {
             });
           }
         }
-        if(shortcuts.length)
-        resConfig.push({name: el.name, icon: el.icon, shortcuts, version: 2});
+        if (shortcuts.length)
+          resConfig.push({ name: el.name, icon: el.icon, shortcuts, version: 2 });
       }
     })
     return resConfig;
@@ -418,20 +418,20 @@ ipcMain.handle('toggleShortcutConfig', async (_, appName: string, shortcut: Shor
   }
 })
 
-const SPECIAL_SHORTCUTS = new Map<string, () => void>([
-    ["mouse_click (right)", () => robot.mouseClick('right', false)],
-    ["Mouse Scroll", () => {}],
-    ["Mouse Cursor", () => {}],
-])
 // 模拟键盘输入
 ipcMain.on('triggerShortcut', (_, keyCombination: string) => {
+  const SPECIAL_SHORTCUTS = new Map<string, () => void>([
+    ["mouse_click (right)", () => robot.mouseClick('right', false)],
+    ["Mouse Scroll", () => { }],
+    ["Mouse Cursor", () => { }],
+  ])
   try {
     const shortcutCallback = SPECIAL_SHORTCUTS.get(keyCombination);
     if (shortcutCallback) {
       shortcutCallback();
       return;
     }
-     // 处理键盘快捷键
+    // 处理键盘快捷键
     const keys = keyCombination.split('+') as keys[];
     const validModifiers = ['alt', 'right_alt', 'command', 'control', 'left_control', 'right_control', 'shift', 'right_shift', 'win'];
     const modifiers = keys.filter((key: string) => validModifiers.includes(key));
@@ -538,7 +538,7 @@ function runWindowMonitor() {
 // 提取软件的 icon
 ipcMain.handle('getBase64Icon', async (_, appPath) => {
   try {
-    const icon = await app.getFileIcon(appPath, {size:"large"});
+    const icon = await app.getFileIcon(appPath, { size: "large" });
     return icon.toPNG().toString("base64");
   } catch (err) {
     log.error("getIconBase64: ", err);

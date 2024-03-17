@@ -5,6 +5,8 @@
 
 import { ipcRenderer, contextBridge } from 'electron'
 
+import { Shortcut } from '@/utils/types'
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 

@@ -1,10 +1,15 @@
-import { FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
 import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
+
 import Webcam from 'react-webcam';
-import Loading from '../components/Loading';
-import { RootState } from '../stores/redux';
+import { FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
+
+import { useSelector } from 'react-redux';
+import { RootState } from '@/stores/redux';
+
+import { AppConfig, Shortcut } from '@/utils/types';
 import useVideoFrames from "@/hooks/useVideoFrames";
+
+import Loading from '@/components/Loading';
 
 interface HandGestureData {
     handLandmarks: Landmark[];
@@ -12,27 +17,16 @@ interface HandGestureData {
 }
 
 const GestureRecognition: React.FC = () => {
-    // 模型加载状态
+    const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
+
     const [isModelLoaded, setIsModelLoaded] = useState(false);
     const [gestureRecognizer, setGestureRecognizer] = useState<GestureRecognizer | null>(null);
+
     const [cameraDevices, setCameraDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedCameraDevice, setSelectedCameraDevice] = useState<MediaDeviceInfo | null>(null);
     const [webcamTempCanvas, setWebcamTempCanvas] = useState<HTMLCanvasElement | null>(null);
     const [webcamTempCanvasContext, setWebcamTempCanvasContext] = useState<CanvasRenderingContext2D | null>(null);
 
-    const webcamRef = useRef<Webcam | null>(null);
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-    /* transferControlToOffscreen() 方法只能对每个 canvas 元素调用一次
-    一旦控制权转移给了 OffscreenCanvas，原来的 canvas 元素就不再可用了
-    Cannot transfer control from a canvas for more than one time */
-    const transferredRef = useRef(false);
-    const workerRef = useRef<Worker>();
-
-    // ✨ 两个窗口的 redux 不是同一个实例，更新配置后需要重启摄像机
-    const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
-
-    // 左右手对应姿势
     const [detectedGestures, setDetectedGestures] = useState({ left: "", right: "" });
     const setGesture = (isLeftHand: boolean, text: string) => {
         setDetectedGestures(prev => ({
@@ -41,9 +35,18 @@ const GestureRecognition: React.FC = () => {
         }));
     };
 
+    const webcamRef = useRef<Webcam | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
     const currentProcessRef = useRef<string>("");
     const lastTriggerRef = useRef({ shortcut: '', timestamp: 0 });
     const lastFingerTipRef = useRef<{ x: number, y: number, timestamp: number } | null>(null);
+
+    /*  transferControlToOffscreen() 方法只能对每个 canvas 元素调用一次
+        一旦控制权转移给了 OffscreenCanvas，原来的 canvas 元素就不再可用了
+        Cannot transfer control from a canvas for more than one time */
+    const transferredRef = useRef(false);
+    const workerRef = useRef<Worker>();
 
     // 离屏渲染
     useEffect(() => {
@@ -60,8 +63,8 @@ const GestureRecognition: React.FC = () => {
                 setCameraDevices(cameras);
                 setSelectedCameraDevice(cameras[0]);
             }).catch(error => {
-            console.error(error);
-        });
+                console.error(error);
+            });
 
         (async function fetchData() {
             const vision = await FilesetResolver.forVisionTasks(
@@ -89,7 +92,6 @@ const GestureRecognition: React.FC = () => {
             currentProcessRef.current = processName.replace(/\r\n$/, '');
         });
     }, []);
-
 
     const [video, setVideo] = useVideoFrames(async () => {
         if (!video || !video.videoWidth || !video.videoHeight || !webcamTempCanvasContext || !webcamTempCanvas || !gestureRecognizer) return;
@@ -155,16 +157,16 @@ const GestureRecognition: React.FC = () => {
             const displayText = categoryName === 'None' ? "" : categoryName;
             setGesture(isLeftHand, displayText);
 
-            // 单独处理指定手势（如果根据 detectedGestures 还需要 setTimeout 等待 setState 的下一个周期更新）
+            // 单独处理指定手势
             if (gesture[0].categoryName === 'Pointing_Up') {
-                if(appConfigs.find(el => el.shortcuts.find(shortcut => {
+                if (appConfigs.find(el => el.shortcuts.find(shortcut => {
                     return shortcut.enabled && (isLeftHand ? shortcut.gestureLeft : shortcut.gestureRight) === 'Pointing_Up';
                 })))
-                pointingUpHands.push({ handLandmarks: landmarks[index], isLeftHand });
+                    pointingUpHands.push({ handLandmarks: landmarks[index], isLeftHand });
             }
         });
 
-        // 只有一只手是 PointingUp 时触发操作，避免两根手指冲突
+        // 只有一只手是 PointingUp 时才触发操作，避免两根手指冲突
         if (pointingUpHands.length === 1) {
             const pointingUpHand = pointingUpHands[0];
             processPointingUp(pointingUpHand.handLandmarks, pointingUpHand.isLeftHand);
@@ -180,7 +182,7 @@ const GestureRecognition: React.FC = () => {
         const now = Date.now();
         const timeThreshold = 1000;
 
-        // 不再使用 PointingUp 则重置，避免鼠标乱跳
+        // 不再使用 PointingUp 时则重置，避免鼠标乱跳
         if (lastFingerTipRef.current && (now - lastFingerTipRef.current.timestamp > timeThreshold)) {
             lastFingerTipRef.current = null;
         }
@@ -200,9 +202,9 @@ const GestureRecognition: React.FC = () => {
                     // 向上 y 变小
                     y: deltaY * scaleFactor,
                 };
-
                 window.controlApi.triggerMouse(deltaCoordinates, isLeftHand);
             }
+
             lastFingerTipRef.current = { x: fingerTip.x, y: fingerTip.y, timestamp: now };
         } else {
             lastFingerTipRef.current = { x: fingerTip.x, y: fingerTip.y, timestamp: now };
@@ -213,6 +215,7 @@ const GestureRecognition: React.FC = () => {
         <>
             {!isModelLoaded && <Loading />}
 
+            {/* 摄像机 */}
             <div className="relative flex justify-center items-center h-screen w-screen">
                 {selectedCameraDevice && <Webcam ref={webcamRef}
                     className="absolute"
@@ -225,7 +228,7 @@ const GestureRecognition: React.FC = () => {
                     onUserMedia={() => {
                         setVideo(webcamRef.current!.video)
                     }}
-                    videoConstraints={{deviceId: selectedCameraDevice.deviceId}}
+                    videoConstraints={{ deviceId: selectedCameraDevice.deviceId }}
                 />}
                 <canvas ref={canvasRef}
                     width={850}
@@ -246,7 +249,6 @@ const GestureRecognition: React.FC = () => {
                         {detectedGestures.left}
                     </div>
                 )}
-
                 {detectedGestures.right && (
                     <div className="float-right bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
                         {detectedGestures.right}
@@ -254,18 +256,22 @@ const GestureRecognition: React.FC = () => {
                 )}
             </div>
 
-            <div className='absolute bottom-0 w-screen px-4 py-2 mt-8'>
+            {/* 相机切换选项 */}
+            <div className='absolute bottom-0 w-screen px-4 py-2 mt-8 select-wrapper'>
                 <form className="max-w-sm mx-auto">
-                    <select value={selectedCameraDevice?.deviceId} onChange={e => {setSelectedCameraDevice(() => cameraDevices.find((camera) => camera.deviceId === e.target.value) ?? null)}} id="webcam-selector"
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        {cameraDevices.map((camera) => (
-                            <option value={camera.deviceId} key={camera.deviceId}>{camera.label}</option>
-                        ))}
+                    <select value={selectedCameraDevice?.deviceId} onChange={e => { setSelectedCameraDevice(() => cameraDevices.find((camera) => camera.deviceId === e.target.value) ?? null) }} id="webcam-selector"
+                        className="text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5">
+                        {cameraDevices.map((camera) =>
+                            <>
+                                <option value={camera.deviceId} key={camera.deviceId}>
+                                    {camera.label}
+                                </option>
+                            </>
+                        )}
                     </select>
                 </form>
             </div>
         </>
-
     );
 };
 

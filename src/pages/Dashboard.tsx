@@ -1,13 +1,17 @@
-import { PlusIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+
 import { useSelector } from "react-redux";
-import Sidebar from "../components/Sidebar";
-import { GlobalSoftwareCard, SoftwareCard } from "../components/SoftwareCard";
-import SoftwareModal from "../components/SoftwareModal";
-import { RootState } from "../stores/redux";
+import { RootState } from "@/stores/redux";
+
+import { AppConfig } from "@/utils/types";
+
+import { GlobalSoftwareCard, SoftwareCard } from "@/components/SoftwareCard";
+import Sidebar from "@/components/Sidebar";
+import SoftwareModal from "@/components/SoftwareModal";
+
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 const Dashboard: React.FC = () => {
-
     const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
     const [isModalOpen, setModalOpen] = useState(false);
 
@@ -25,10 +29,7 @@ const Dashboard: React.FC = () => {
 
                     {/* 用户自定义 */}
                     {appsConfigs.map((appConfig, index) => {
-                        // 排除name等于"Global"的项
-                        if (appConfig.name === "Global") {
-                            return null;
-                        }
+                        if (appConfig.name === "Global") return;
 
                         return (
                             <SoftwareCard
@@ -48,7 +49,6 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     {isModalOpen && <SoftwareModal onClose={() => setModalOpen(false)} />}
-
                 </div>
             </div>
         </div >

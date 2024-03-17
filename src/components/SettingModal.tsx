@@ -1,21 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { updateTimestamp } from '@/stores/configSlice';
+import { RootState } from '@/stores/redux';
+
+import { AppConfig, Shortcut } from '@/utils/types';
+import { HAND_IMG_PATHS } from '@/utils/constants'
+import { KeyboardEventKeyCodeToRobotJSKeyCode } from "@/utils/KeyboardUtils";
 
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { updateTimestamp } from '../stores/configSlice';
-import { RootState } from '../stores/redux';
-import imagePaths from '../utils/hands-paths.json';
-import {KeyboardEventKeyCodeToRobotJSKeyCode} from "@/utils/KeyboardUtils";
 
-// 全局设置的特定操作
+/**
+ * 全局设置的特定操作
+ */
 const controlKeys = [
     'mouse_click (right)',
     'audio_vol_down', 'audio_vol_up', 'audio_pause',
     'audio_mute', 'audio_prev', 'audio_next'
 ];
+
 const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { software } = useParams();
+    
     const dispatch = useDispatch();
     const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
@@ -30,20 +37,19 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     // 手势绑定
     const [hands, setHands] = useState({ left: '', right: '' });
-
     // 下拉菜单开关
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-
-    // 输入框激活
-    function handleInputClick() {
-        if (isDropdownOpen) { setIsDropdownOpen(false); }
-        if (inputError) { setInputError('') }
-    }
 
     // 下拉菜单选择操作
     function selectKeyFromDropdown(key: string) {
         setKeyCombination(key);
         toggleDropdown();
+    }
+
+    // 输入框激活
+    function handleInputClick() {
+        if (isDropdownOpen) { setIsDropdownOpen(false); }
+        if (inputError) { setInputError('') }
     }
 
     // 手势选择
@@ -53,13 +59,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             ...prevHands,
             [handType]: prevHands[handType] === gestureName ? '' : gestureName
         }));
-    }
-
-    // 提取图片文件名中对应的手势（去除 Left/Right 后缀）
-    function extractGestureName(gestureName: string) {
-        const nameParts = gestureName.split('_');
-        nameParts.pop();
-        return nameParts.join('_');
     }
 
     // 确认添加
@@ -97,7 +96,20 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         onClose();
     }
 
-    // 在当前软件下查询是否有重复的配置 (支持不同手势对应相同的快捷键，但拒绝使用相同的手势)
+    /**
+     * 提取图片文件名中对应的手势
+     *（去除 Left/Right 后缀）
+     */
+    function extractGestureName(gestureName: string) {
+        const nameParts = gestureName.split('_');
+        nameParts.pop();
+        return nameParts.join('_');
+    }
+
+    /**
+     * 在当前软件下查询是否有重复的配置 
+     * (支持不同手势对应相同的快捷键，但拒绝使用相同的手势)
+     */
     function checkDuplicateSetting(): boolean {
         const currentConfig: AppConfig | undefined = appConfigs.find(appConfig => appConfig.name === software);
         if (currentConfig) {
@@ -108,7 +120,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 }
             }
         }
-
         return false;
     }
 
@@ -156,7 +167,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             window.removeEventListener('keyup', handleKeyUp);
         };
     }, [clearOnNextKey, inputError]);
-
 
     const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
     return (
@@ -225,14 +235,14 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 {/* 左手手势 */}
                 <p className="text-xl font-semibold text-center mt-8 text-teal-600">Left Hand</p>
                 <div className="flex flex-wrap justify-center gap-10">
-                    {imagePaths.left.map((img, index) => (
+                    {HAND_IMG_PATHS.left.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
                             <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
                                 name="leftHandGesture"
-                                checked={hands.left === extractGestureName(imagePaths.left[index])}
-                                onChange={() => handleHandSelect('left', extractGestureName(imagePaths.left[index]))}
+                                checked={hands.left === extractGestureName(HAND_IMG_PATHS.left[index])}
+                                onChange={() => handleHandSelect('left', extractGestureName(HAND_IMG_PATHS.left[index]))}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
@@ -241,15 +251,15 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 {/* 右手手势 */}
                 <p className="text-xl font-semibold text-center mt-8 text-teal-600">Right Hand</p>
                 <div className="flex flex-wrap justify-center gap-10">
-                    {imagePaths.right.map((img, index) => (
+                    {HAND_IMG_PATHS.right.map((img, index) => (
                         <div key={index} className="flex flex-col items-center">
                             <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
                                 type="checkbox"
                                 alt={img}
                                 name="rightHandGesture"
-                                checked={hands.right === extractGestureName(imagePaths.right[index])}
-                                onChange={() => handleHandSelect('right', extractGestureName(imagePaths.right[index]))}
+                                checked={hands.right === extractGestureName(HAND_IMG_PATHS.right[index])}
+                                onChange={() => handleHandSelect('right', extractGestureName(HAND_IMG_PATHS.right[index]))}
                                 className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>

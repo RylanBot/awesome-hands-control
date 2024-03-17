@@ -1,15 +1,18 @@
-import { TrashIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
-import { updateTimestamp } from "../stores/configSlice";
+
+import { useDispatch } from "react-redux";
+import { updateTimestamp } from "@/stores/configSlice";
+
+import { Shortcut } from "@/utils/types";
+
+import { TrashIcon } from "@heroicons/react/24/solid";
 
 interface SettingCardProp {
     shortcut: Shortcut;
 }
 
 const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
-
     const { software } = useParams();
     const dispatch = useDispatch();
 
@@ -40,6 +43,11 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
                         <>
                             {/* 快捷键 */}
                             <span>{shortcut.keyCombination}</span>
+                            {/* 禁用按钮 */}
+                            <label className="absolute top-9 left-10 cursor-pointer" onClick={toggleShortcut}>
+                                <input type="checkbox" className="sr-only peer" checked={shortcut.enabled} onChange={() => { }} />
+                                <div className="relative w-11 h-6 bg-gray-200 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-200"></div>
+                            </label>
                             {/* 删除按钮 */}
                             {shortcut.removable &&
                                 <div className="absolute top-9 right-10">
@@ -63,14 +71,9 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
                                     Cancel
                                 </button>
                             </div>
-                        </>}
+                        </>
+                    }
                 </div>
-
-                <label className="inline-flex items-center me-5 cursor-pointer" onClick={toggleShortcut}>
-                    <input type="checkbox" value="" className="sr-only peer" checked={shortcut.enabled} />
-                        <div
-                            className="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-teal-300 dark:peer-focus:ring-teal-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-teal-600"></div>
-                </label>
 
                 <div className="flex justify-center items-center">
                     {/* 对应手势 */}

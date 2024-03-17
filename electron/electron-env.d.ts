@@ -1,5 +1,7 @@
 /// <reference types="vite-plugin-electron/electron-env" />
 
+import { AppConfig, Shortcut } from '@/utils/types'
+
 declare namespace NodeJS {
   interface ProcessEnv {
     /**
@@ -21,27 +23,20 @@ declare namespace NodeJS {
   }
 }
 
-// Used in Renderer process, expose in `preload.ts`
 declare global {
   interface Window {
     ipcRenderer: import('electron').IpcRenderer
-    // 对应 preload 的 api Key
+    /*  对应 preload 的 api Key 
+        Used in Renderer process, expose in `preload.ts` */
     windowApi: WindowApi
     configApi: ConfigApi
     controlApi: ControlApi
   }
-  type Shortcut = {
-    keyCombination: string;
-    gestureRight?: string;
-    gestureLeft?: string;
-    enabled: boolean;
-    removable: boolean;
-  }
-  type AppConfig = {
-    name: string;
-    icon: string;
-    shortcuts: Shortcut[];
-    version: number;
+
+  interface Navigator {
+    keyboard: {
+      getLayoutMap: () => Map<string, string>;
+    };
   }
 }
 

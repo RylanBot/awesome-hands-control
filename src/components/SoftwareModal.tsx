@@ -1,9 +1,15 @@
-import { PhotoIcon } from '@heroicons/react/24/solid';
+
 import React, { useRef, useState } from 'react';
+
 import { useDispatch, useSelector } from 'react-redux';
-import { updateTimestamp } from '../stores/configSlice';
-import { RootState } from '../stores/redux';
+import { updateTimestamp } from '@/stores/configSlice';
+import { RootState } from '@/stores/redux';
+
+import { AppConfig } from '@/utils/types';
+
+import { PhotoIcon } from '@heroicons/react/24/solid';
 import ToastMessage from './ToastMessage';
+
 interface InputFile extends File {
     path: string;
 }
@@ -15,12 +21,13 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
 
     const [appName, setAppName] = useState('');
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const [base64Icon, setBase64Icon] = useState('');
 
-    // 消息提示
     const [showToast, setShowToast] = useState(false);
     const [message, setMessage] = useState('');
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     function displayToast(msg: string) {
         setMessage(msg);
         setShowToast(true);

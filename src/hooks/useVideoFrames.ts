@@ -4,12 +4,16 @@ type VideoEventListenerMap = {
     [EventName in keyof HTMLMediaElementEventMap]?: EventListener;
 };
 
+/**
+ * A web API for performing efficient operations on each video frame
+ * https://web.dev/requestvideoframecallback-rvfc/
+ */
 const useVideoFrames = (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    frameCallback = (videoTime: number) => {}
+    frameCallback = (_: number) => { }
 ): [HTMLVideoElement | null, React.RefCallback<HTMLVideoElement>] => {
-    const [video, setVideo] = useState<HTMLVideoElement | null>(null);
 
+    const [video, setVideo] = useState<HTMLVideoElement | null>(null);
     const callbackRef = useRef(frameCallback);
     callbackRef.current = frameCallback;
 
@@ -21,7 +25,6 @@ const useVideoFrames = (
         let cancelFrame = cancelAnimationFrame;
 
         if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
-            // https://web.dev/requestvideoframecallback-rvfc/
             const vid = video as HTMLVideoElement & {
                 requestVideoFrameCallback: typeof requestAnimationFrame;
                 cancelVideoFrameCallback: typeof cancelAnimationFrame;
@@ -55,8 +58,7 @@ const useVideoFrames = (
         };
 
         Object.keys(eventListeners).forEach((eventName) => {
-            const eventListener =
-                eventListeners[eventName as keyof HTMLMediaElementEventMap];
+            const eventListener = eventListeners[eventName as keyof HTMLMediaElementEventMap];
             if (eventListener != null) {
                 video.addEventListener(eventName, eventListener);
             }
