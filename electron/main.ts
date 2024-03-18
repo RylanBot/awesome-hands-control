@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 import robot, { keys } from '@hurdlegroup/robotjs';
 import activeWindow from "active-win";
 
+import { AppConfig, Shortcut } from '@/utils/types';
+
 globalThis.__filename = fileURLToPath(import.meta.url)
 globalThis.__dirname = dirname(__filename)
 
@@ -23,23 +25,23 @@ process.on('uncaughtException', (error) => {
   log.error('uncaughtException: ', error);
 });
 
-let iconSuffix: string;
+let taskBarIconSuffix: string;
 if (process.platform === 'darwin') {
-  // macOS 系统使用
-  iconSuffix = 'icns'
+  // macOS
+  taskBarIconSuffix = 'icns'
 } else {
   // Windows
-  iconSuffix = 'ico'
+  taskBarIconSuffix = 'ico'
 }
 
 // BrowserWindow 用于创建和管理应用的窗口 
-let mainWindow: BrowserWindow | null
+let mainWindow: BrowserWindow | null;
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
-const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${iconSuffix}`),
+    icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${taskBarIconSuffix}`),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false, // 是否在渲染进程中启用 Node.js 集成，即 *.tsx 能直接访问系统接口
@@ -55,30 +57,22 @@ function createMainWindow() {
 
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/main`);
-    // mainWindow.loadURL(`${VITE_DEV_SERVER_URL}#/`);
   } else {
-    // win.loadFile('dist/index.html')
     mainWindow.loadFile(path.join(process.env.DIST!, 'index.html'))
   }
-
-  // Test active push message to Renderer-process.
-  // mainWindow.webContents.on('did-finish-load', () => {
-  //   mainWindow?.webContents.send('main-process-message', (new Date).toLocaleString())
-  // })
 
   mainWindow.on('ready-to-show', () => {
     mainWindow!.webContents.send('identifyWindow', 'main');
   })
-}
+};
 
 // 新增一个自定义窗口
 let cameraWindow: BrowserWindow | null
-let isTransparent = false;
+// let isTransparent = false;
 let monitorIntervalId: NodeJS.Timeout | null = null;
 function createCameraWindow() {
-
   cameraWindow = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${iconSuffix}`),
+    icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${taskBarIconSuffix}`),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       nodeIntegration: false,
@@ -88,20 +82,18 @@ function createCameraWindow() {
     frame: false,
     width: 850,
     height: 600,
-    // skipTaskbar: true, // 不在任务栏显示
+    skipTaskbar: true, // 不在任务栏显示
     resizable: false,
   });
-
-  // 永远置顶，除非手动最小化or关闭
-  cameraWindow.setAlwaysOnTop(true);
 
   if (VITE_DEV_SERVER_URL) {
     cameraWindow.loadURL(`${VITE_DEV_SERVER_URL}#/camera`);
   } else {
-    // win.loadFile('dist/index.html')
-    // cameraWindow.loadFile(path.join(process.env.DIST!, 'index.html/camera'))
     cameraWindow.loadFile(path.join(process.env.DIST!, 'index.html'))
   }
+
+  cameraWindow.setAlwaysOnTop(true);
+  createCameraTray();
 
   // 网页（所有的资源）加载完成后触发
   // cameraWindow.webContents.on('did-finish-load', () => {
@@ -118,45 +110,28 @@ function createCameraWindow() {
       clearInterval(monitorIntervalId);
     }
     cameraWindow = null;
-    if (tray) {
-      tray.destroy();
-      tray = null;
+    if (cameraTray) {
+      cameraTray.destroy();
+      cameraTray = null;
     }
   });
-}
+};
 
-
-let tray: Tray | null
+let cameraTray: Tray | null;
 function createCameraTray() {
-  const trayIcon = path.join(process.env.VITE_PUBLIC! as string, './images/icons/CameraWindow.ico');
-  tray = new Tray(trayIcon);
+  const trayIcon = path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraTray.png`);
+  cameraTray = new Tray(trayIcon);
+  cameraTray.setToolTip('Awesome Hands');
 
-  tray.setToolTip('Awesome Hands');
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Close Camera',
-      click: function () {
-        cameraWindow!.close()
-        cameraWindow = null
-        tray!.destroy();
-        tray = null;
-      }
-    }
-  ]);
-  tray.setContextMenu(contextMenu);
-
-  tray.on('click', () => {
-    if (cameraWindow && isTransparent) {
-      cameraWindow.setOpacity(1.0);
-      cameraWindow.setSkipTaskbar(false);
-      isTransparent = false;
-      tray!.destroy();
-      tray = null;
-    }
+  cameraTray.on('click', () => {
+    // if (cameraWindow && isTransparent) {
+    //   cameraWindow.setOpacity(1.0);
+    //   cameraWindow.setSkipTaskbar(false);
+    //   cameraTray!.destroy();
+    //   cameraTray = null;
+    // }
   });
-}
-
+};
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -167,7 +142,7 @@ app.on('window-all-closed', () => {
     mainWindow = null
     cameraWindow = null
   }
-})
+});
 
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
@@ -175,7 +150,7 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createMainWindow()
   }
-})
+});
 
 // 🔊 这是整个 electron 项目的生命周期，不单指某个窗口
 app.whenReady().then(async () => {
@@ -185,8 +160,7 @@ app.whenReady().then(async () => {
   } catch (error) {
     log.error("initialConfig: ", error);
   }
-}
-)
+});
 
 const store = new ElectronStore({
   name: 'awesome-hands-config',
@@ -195,40 +169,65 @@ const store = new ElectronStore({
 
 let localConfigs: AppConfig[] = [];
 async function loadInitialConfig() {
+  const DEFAULT_SHORTCUTS = [
+    {
+      keyCombination: "Mouse Scroll",
+      gestureLeft: "Pointing_Up",
+      gestureRight: "",
+      enabled: true,
+      removable: false,
+    },
+    {
+      keyCombination: "Mouse Cursor",
+      gestureLeft: "NOTE",
+      gestureRight: "Pointing_Up",
+      enabled: true,
+      removable: false,
+    }
+  ];
+
   const DEFAULT_CONFIG: AppConfig[] = [
     {
       name: 'Global',
       icon: "",
-      shortcuts: [
-        {
-          keyCombination: "Mouse Scroll",
-          gestureLeft: "Pointing_Up",
-          gestureRight: "",
-          enabled: true,
-          removable: false,
-        },
-        {
-          keyCombination: "Mouse Cursor",
-          gestureLeft: "NOTE",
-          gestureRight: "Pointing_Up",
-          enabled: true,
-          removable: false,
-        },
-      ],
+      shortcuts: DEFAULT_SHORTCUTS,
       version: 2
     }
   ];
 
   localConfigs = convertConfigFormat(store.get('apps'));
-  if (!localConfigs.length) localConfigs = DEFAULT_CONFIG;
 
+  if (localConfigs.length === 0) {
+    localConfigs = DEFAULT_CONFIG;
+    store.set('apps', localConfigs);
+    return;
+  }
+
+  const globalConfigIndex = localConfigs.findIndex(config => config.name === 'Global');
+  if (globalConfigIndex !== -1) {
+    const globalConfig = localConfigs[globalConfigIndex];
+    DEFAULT_SHORTCUTS.forEach(defaultShortcut => {
+      if (!globalConfig.shortcuts.some(shortcut => shortcut.keyCombination === defaultShortcut.keyCombination)) {
+        globalConfig.shortcuts.unshift(defaultShortcut);
+      }
+    });
+    localConfigs[globalConfigIndex] = globalConfig;
+  } else {
+    localConfigs.unshift({
+      name: 'Global',
+      icon: "",
+      shortcuts: DEFAULT_SHORTCUTS,
+      version: 2,
+    });
+  }
   store.set('apps', localConfigs);
-}
+};
 
 function convertConfigFormat(config: any): AppConfig[] {
   if (Array.isArray(config)) {
     const resConfig: AppConfig[] = [];
     (config as Array<any>).forEach((el) => {
+      // Compatible with the config in v1.0.x, adapt it to the current rules
       if (el.hasOwnProperty("version") && el.version == 2) resConfig.push(el as AppConfig);
       else if (el.hasOwnProperty("name") && el.hasOwnProperty("icon") && el.hasOwnProperty("shortcut")) {
         const shortcuts: Shortcut[] = [];
@@ -252,7 +251,7 @@ function convertConfigFormat(config: any): AppConfig[] {
     return resConfig;
   }
   return [];
-}
+};
 
 // ----------  以上是基本框架，以下是添加的具体功能 ----------
 // 类似后端的 Service 层
@@ -268,7 +267,7 @@ ipcMain.on('close', (_, windowName) => {
   if (windowName === 'camera' && cameraWindow) {
     cameraWindow.close();
     cameraWindow = null;
-    tray?.destroy();
+    cameraTray?.destroy();
   }
 });
 
@@ -277,17 +276,16 @@ ipcMain.on('minimizeToTaskbar', (_, windowName) => {
     mainWindow?.minimize();
   }
 
-  if (windowName === 'camera' && cameraWindow) {
-    // cameraWindow.minimize();
-
-    /*  electron中如果一个 Window 被设置为隐藏或者最小化后
-        那么这个它人认为该窗口应该就不需要过多的占用 CPU 资源, 导致相机无法正常读取 
-        相机的最小化实际是利用样式将其变透明, 而不是真正隐藏 */
-    createCameraTray();
-    cameraWindow.setOpacity(0.0);
-    cameraWindow.setSkipTaskbar(true);
-    isTransparent = true;
-  }
+  /*  electron中如果一个 Window 被设置为隐藏或者最小化后
+      那么这个它人认为该窗口应该就不需要过多的占用 CPU 资源, 导致相机无法正常读取 
+      相机的最小化实际是利用样式将其变透明, 而不是真正隐藏
+      （但 macOS 透明化后会阻挡在其它窗口前面，导致无法点击） */
+  // if (windowName === 'camera' && cameraWindow && !cameraTray) {
+  //   createCameraTray();
+  //   cameraWindow.setOpacity(0.0);
+  //   cameraWindow.setSkipTaskbar(true);
+  //   isTransparent = true;
+  // }
 });
 
 // >> 主窗口
@@ -299,11 +297,6 @@ ipcMain.on('openCamera', () => {
   }
 
   createCameraWindow();
-});
-
-// >> 摄像机窗口
-ipcMain.on('minimizeToTray', () => {
-  cameraWindow?.hide();
 });
 
 ipcMain.on('minimizeToCorner', () => {
@@ -322,12 +315,12 @@ ipcMain.on('minimizeToCorner', () => {
       const y = display.bounds.y + (display.bounds.height - height);
 
       cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
+      cameraWindow.setAlwaysOnTop(true);
     }
   } catch (error) {
     log.error('minimizeToCorner: ', error);
   }
 });
-
 
 ipcMain.on('resetCameraWindow', () => {
   try {
@@ -344,6 +337,7 @@ ipcMain.on('resetCameraWindow', () => {
       const y = display.bounds.y + ((display.bounds.height - height) / 2);
 
       cameraWindow.setBounds({ x: x, y: y, width: width, height: height });
+      cameraWindow.setAlwaysOnTop(false);
     }
   } catch (error) {
     log.error('resetCameraWindow: ', error);
@@ -353,7 +347,7 @@ ipcMain.on('resetCameraWindow', () => {
 // 读取初始化配置
 ipcMain.handle('initialConfig', async () => {
   return localConfigs;
-})
+});
 
 // 添加软件
 ipcMain.handle('updateAppConfig', async (_, appName: string, base64Icon: string) => {
@@ -392,7 +386,7 @@ ipcMain.handle('updateShortcutConfig', async (_, appName: string, shortcut: Shor
     store.set('apps', localConfigs);
     return true;
   }
-})
+});
 
 // 删除快捷键
 ipcMain.handle('deleteShortcutConfig', async (_, appName, keyCombination: string) => {
@@ -404,7 +398,7 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, keyCombination: string
     store.set('apps', localConfigs);
     return true;
   }
-})
+});
 
 ipcMain.handle('toggleShortcutConfig', async (_, appName: string, shortcut: Shortcut) => {
   const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
@@ -416,7 +410,7 @@ ipcMain.handle('toggleShortcutConfig', async (_, appName: string, shortcut: Shor
     store.set('apps', localConfigs);
     return true;
   }
-})
+});
 
 // 模拟键盘输入
 ipcMain.on('triggerShortcut', (_, keyCombination: string) => {
@@ -445,7 +439,7 @@ ipcMain.on('triggerShortcut', (_, keyCombination: string) => {
   } catch (error) {
     log.error("triggerShortcut", error);
   }
-})
+});
 
 // 处理鼠标移动
 ipcMain.on('triggerMouse', (_, delta: { x: number, y: number }, isLeftHand) => {
@@ -460,8 +454,7 @@ ipcMain.on('triggerMouse', (_, delta: { x: number, y: number }, isLeftHand) => {
   } catch (error) {
     log.error("triggerMouse", error);
   }
-}
-);
+});
 
 let lastMousePosition = { x: 0, y: 0 };
 let clickTimer: NodeJS.Timeout | null = null;
@@ -506,7 +499,7 @@ function resetTimers() {
 // 打开外部链接
 ipcMain.on('openExternalLink', (_, url) => {
   shell.openExternal(url);
-})
+});
 
 // 进程判断
 function runWindowMonitor() {
@@ -533,7 +526,7 @@ function runWindowMonitor() {
   }, 1000);
 
   return intervalId;
-}
+};
 
 // 提取软件的 icon
 ipcMain.handle('getBase64Icon', async (_, appPath) => {

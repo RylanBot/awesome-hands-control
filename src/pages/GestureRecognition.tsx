@@ -193,7 +193,7 @@ const GestureRecognition: React.FC = () => {
 
             const debounceThreshold = 0.005;
             // 放大倍数，比如 0.02 使其相当于移动 100px
-            const scaleFactor = 5000;
+            const scaleFactor = 4000;
 
             if (Math.abs(deltaX) > debounceThreshold || Math.abs(deltaY) > debounceThreshold) {
                 const deltaCoordinates = {

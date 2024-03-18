@@ -44,7 +44,6 @@ interface WindowApi {
   close: (windowName: string) => void;
   minimizeToTaskbar: (windowName: string) => void;
   openCamera: () => void;
-  minimizeToTray: () => void;
   minimizeToCorner: () => void;
   resetCameraWindow: () => void
   identifyWindow: (callback: (windowName: string) => void) => void;

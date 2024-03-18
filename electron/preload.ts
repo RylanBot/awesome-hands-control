@@ -131,18 +131,11 @@ window.onmessage = ev => {
 
 contextBridge.exposeInMainWorld('windowApi', {
   close: (windowName: string) => ipcRenderer.send('close', windowName),
-  // 主窗口
   openCamera: () => ipcRenderer.send('openCamera'),
   minimizeToTaskbar: (windowName: string) => ipcRenderer.send('minimizeToTaskbar', windowName),
-  // 摄像机窗口
-  minimizeToTray: () => ipcRenderer.send('minimizeToTray'),
   minimizeToCorner: () => ipcRenderer.send('minimizeToCorner'),
   resetCameraWindow: () => ipcRenderer.send('resetCameraWindow'),
-  // 判断当前窗口
-  identifyWindow: (callback: (windowName: string) => void) => ipcRenderer.on('identifyWindow', (_, windowName) => {
-    callback(windowName)
-  }),
-  // 打开外部链接
+  identifyWindow: (callback: (windowName: string) => void) => ipcRenderer.on('identifyWindow', (_, windowName) => { callback(windowName) }),
   openExternalLink: (url: string) => ipcRenderer.send('openExternalLink', url),
 });
 
@@ -174,10 +167,7 @@ contextBridge.exposeInMainWorld('configApi', {
 });
 
 contextBridge.exposeInMainWorld('controlApi', {
-  transmitProcess: (callback: (processName: string) => void) => ipcRenderer.on('transmitProcess', (_, processName) => {
-    callback(processName)
-  }
-  ),
+  transmitProcess: (callback: (processName: string) => void) => ipcRenderer.on('transmitProcess', (_, processName) => { callback(processName) }),
   triggerShortcut: (shortcut: string) => { ipcRenderer.send('triggerShortcut', shortcut); },
   triggerMouse: (deltaCoordinates: { x: number, y: number }, isLeftHand: string) => { ipcRenderer.send('triggerMouse', deltaCoordinates, isLeftHand); },
 });

@@ -58,12 +58,12 @@ const CameraWindowBar: React.FC = () => {
                 )}
             </button>
 
-            <button
+            {/* <button
                 className="btn-no-drag mr-5"
                 onClick={() => window.windowApi.minimizeToTaskbar(windowName)}
             >
                 <MinusIcon className='h-5 w-5 text-white' />
-            </button>
+            </button> */}
 
             {/* 关闭窗口 */}
             <button
