@@ -1,3 +1,14 @@
+/**
+ * @deprecated v1.0.x 的配置文件格式
+ */
+export type AppConfigV1 = {
+    name: string;
+    icon: string;
+    shortcut: {
+        [shortcutName: string]: [string, string];
+    };
+}
+
 export type Shortcut = {
     keyCombination: string;
     gestureLeft?: string;

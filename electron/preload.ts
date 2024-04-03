@@ -11,6 +11,8 @@ import { Shortcut } from '@/utils/types'
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 
 // `exposeInMainWorld` can't detect attributes and methods of `prototype`, manually patching it.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function withPrototype(obj: Record<string, any>) {
   const protos = Object.getPrototypeOf(obj)
 
@@ -19,6 +21,7 @@ function withPrototype(obj: Record<string, any>) {
 
     if (typeof value === 'function') {
       // Some native APIs, like `NodeJS.EventEmitter['on']`, don't work in the Renderer process. Wrapping them into a function.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       obj[key] = function (...args: any) {
         return value.call(obj, ...args)
       }
@@ -115,6 +118,7 @@ function useLoading() {
 
 // ----------------------------------------------------------------------
 
+// eslint-disable-next-line react-hooks/rules-of-hooks
 const { appendLoading, removeLoading } = useLoading()
 domReady().then(appendLoading)
 

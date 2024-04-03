@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+
 import react from '@vitejs/plugin-react'
 import electron from 'vite-plugin-electron/simple'
 
@@ -67,6 +68,7 @@ export default defineConfig(({ command }) => {
       }),
     ],
     server: process.env.VSCODE_DEBUG && (() => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {

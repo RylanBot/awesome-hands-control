@@ -1,6 +1,6 @@
 /* 主进程文件，负责与操作系统的交互。*/
 
-import { app, BrowserWindow, ipcMain, Menu, screen, shell, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, shell, Tray } from 'electron';
 import log from 'electron-log/main';
 import ElectronStore from "electron-store";
 
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import robot, { keys } from '@hurdlegroup/robotjs';
 import activeWindow from "active-win";
 
-import { AppConfig, Shortcut } from '@/utils/types';
+import { AppConfig, AppConfigV1, Shortcut } from '@/utils/types';
 
 globalThis.__filename = fileURLToPath(import.meta.url)
 globalThis.__dirname = dirname(__filename)
@@ -64,12 +64,12 @@ function createMainWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow!.webContents.send('identifyWindow', 'main');
   })
-};
+}
 
 // 新增一个自定义窗口
 let cameraWindow: BrowserWindow | null
 // let isTransparent = false;
-let monitorIntervalId: NodeJS.Timeout | null = null;
+const monitorIntervalId: NodeJS.Timeout | null = null;
 function createCameraWindow() {
   cameraWindow = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${taskBarIconSuffix}`),
@@ -115,7 +115,7 @@ function createCameraWindow() {
       cameraTray = null;
     }
   });
-};
+}
 
 let cameraTray: Tray | null;
 function createCameraTray() {
@@ -131,7 +131,7 @@ function createCameraTray() {
     //   cameraTray = null;
     // }
   });
-};
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
@@ -195,7 +195,7 @@ async function loadInitialConfig() {
     }
   ];
 
-  localConfigs = convertConfigFormat(store.get('apps'));
+  localConfigs = convertConfigFormat(store.get('apps') as AppConfig[] | AppConfigV1[]);
 
   if (localConfigs.length === 0) {
     localConfigs = DEFAULT_CONFIG;
@@ -221,37 +221,39 @@ async function loadInitialConfig() {
     });
   }
   store.set('apps', localConfigs);
-};
+}
 
-function convertConfigFormat(config: any): AppConfig[] {
-  if (Array.isArray(config)) {
-    const resConfig: AppConfig[] = [];
-    (config as Array<any>).forEach((el) => {
-      // Compatible with the config in v1.0.x, adapt it to the current rules
-      if (el.hasOwnProperty("version") && el.version == 2) resConfig.push(el as AppConfig);
-      else if (el.hasOwnProperty("name") && el.hasOwnProperty("icon") && el.hasOwnProperty("shortcut")) {
-        const shortcuts: Shortcut[] = [];
-        for (const key in el.shortcut) {
-          if (Object.prototype.hasOwnProperty.call(el.shortcut, key)) {
-            const keyCombination = key;
-            const [gestureLeft, gestureRight] = el.shortcut[key];
-            shortcuts.push({
-              keyCombination,
-              gestureLeft,
-              gestureRight,
-              enabled: true,
-              removable: true
-            });
-          }
+function convertConfigFormat(config: AppConfig[] | AppConfigV1[]): AppConfig[] {
+  const resConfig: AppConfig[] = [];
+  config.forEach((el) => {
+    if ('version' in el) {
+      resConfig.push(el as AppConfig);
+    } else {
+      const shortcuts: Shortcut[] = [];
+      for (const key in el.shortcut) {
+        if (key in el.shortcut) {
+          const [gestureLeft, gestureRight] = el.shortcut[key];
+          shortcuts.push({
+            keyCombination: key,
+            gestureLeft,
+            gestureRight,
+            enabled: true,
+            removable: true
+          });
         }
-        if (shortcuts.length)
-          resConfig.push({ name: el.name, icon: el.icon, shortcuts, version: 2 });
       }
-    })
-    return resConfig;
-  }
-  return [];
-};
+      if (shortcuts.length) {
+        resConfig.push({
+          name: el.name,
+          icon: el.icon,
+          shortcuts,
+          version: 2
+        });
+      }
+    }
+  })
+  return resConfig;
+}
 
 // ----------  以上是基本框架，以下是添加的具体功能 ----------
 // 类似后端的 Service 层
@@ -400,6 +402,7 @@ ipcMain.handle('deleteShortcutConfig', async (_, appName, keyCombination: string
   }
 });
 
+// 禁用快捷键
 ipcMain.handle('toggleShortcutConfig', async (_, appName: string, shortcut: Shortcut) => {
   const index = localConfigs.findIndex((appConfig) => appConfig.name === appName);
   if (index !== -1) {
@@ -501,10 +504,12 @@ ipcMain.on('openExternalLink', (_, url) => {
   shell.openExternal(url);
 });
 
-// 进程判断
+/**
+ * 进程判断 
+ */
 function runWindowMonitor() {
   let lastProcessName = "";
-  let intervalId = setInterval(async () => {
+  const intervalId = setInterval(async () => {
     try {
       if (!cameraWindow || cameraWindow.isDestroyed()) {
         clearInterval(intervalId);
@@ -526,7 +531,7 @@ function runWindowMonitor() {
   }, 1000);
 
   return intervalId;
-};
+}
 
 // 提取软件的 icon
 ipcMain.handle('getBase64Icon', async (_, appPath) => {

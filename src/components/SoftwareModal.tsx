@@ -1,13 +1,13 @@
-
 import React, { useRef, useState } from 'react';
 
-import { useDispatch, useSelector } from 'react-redux';
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppConfig } from '@/utils/types';
 
 import { PhotoIcon } from '@heroicons/react/24/solid';
+
 import ToastMessage from './ToastMessage';
 
 interface InputFile extends File {
@@ -90,7 +90,7 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="fixed bg-white p-6 rounded-lg shadow-lg w-1/3 ml-24">
                 <div className="flex items-center gap-4">
                     <span className='text-gray-700 px-2 ml-2 italic font-mono'>Software Icon</span>
-                    <button onClick={handleAddSoftwareClick} className="w-24 h-24 rounded flex items-center border-solid border-dashed border-2 border-teal-500">
+                    <button onClick={handleAddSoftwareClick} className="w-24 h-24 rounded flex items-center border-dashed border-2 border-teal-500">
                         {loading ?
                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-teal-500 m-8"></div>
                             :
