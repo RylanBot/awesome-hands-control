@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useDispatch } from 'react-redux';
 import { updateTimestamp } from '@/stores/configSlice';
+import { useDispatch } from 'react-redux';
 
 import { TrashIcon } from '@heroicons/react/24/solid';
 
@@ -20,16 +20,14 @@ const SoftwareCard: React.FC<SoftwareCardProps> = ({ icon, name }) => {
     function handleDeleteClick() {
         setShowDeleteConfirm(true);
     }
-    
+
     function handleCancelDelete() {
         setShowDeleteConfirm(false);
     }
 
     async function handleConfirmDelete() {
-        const deleteSuccess = await window.configApi.deleteAppConfig(name);
-        if (deleteSuccess) {
-            dispatch(updateTimestamp());
-        }
+        await window.configApi.deleteAppConfig(name);
+        dispatch(updateTimestamp());
         setShowDeleteConfirm(false);
     }
 

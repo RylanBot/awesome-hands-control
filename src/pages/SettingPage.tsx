@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useSelector } from 'react-redux';
 import { RootState } from '@/stores/redux';
+import { useSelector } from 'react-redux';
 
-import { AppConfig } from '@/utils/types';
-
-import SettingModal from '@/components/SettingModal';
 import SettingCard from '@/components/SettingCard';
+import SettingModal from '@/components/SettingModal';
 
 import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
+
+import { AppConfig } from '../../common/types/config';
 
 const SettingPage: React.FC = () => {
     const { software } = useParams(); // 变量名必须和路由配置里一样

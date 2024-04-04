@@ -1,24 +1,10 @@
 /// <reference types="vite-plugin-electron/electron-env" />
 
-import { AppConfig, Shortcut } from '@/utils/types'
+import { AppConfig, Shortcut } from '../../types/config'
 
 declare namespace NodeJS {
   interface ProcessEnv {
-    /**
-     * The built directory structure
-     *
-     * ```tree
-     * ├─┬─┬ dist
-     * │ │ └── index.html
-     * │ │
-     * │ ├─┬ dist-electron
-     * │ │ ├── main.js
-     * │ │ └── preload.js
-     * │
-     * ```
-     */
     DIST: string
-    /** /dist/ or /public/ */
     VITE_PUBLIC: string
   }
 }
@@ -26,8 +12,7 @@ declare namespace NodeJS {
 declare global {
   interface Window {
     ipcRenderer: import('electron').IpcRenderer
-    /*  对应 preload 的 api Key 
-        Used in Renderer process, expose in `preload.ts` */
+    /*  对应 preload 的 api Key  */
     windowApi: WindowApi
     configApi: ConfigApi
     controlApi: ControlApi
@@ -67,4 +52,4 @@ interface ControlApi {
   triggerMouse: (deltaCoordinates: { x: number, y: number }, isLeftHand: boolean) => void
 }
 
-export { };
+export { }

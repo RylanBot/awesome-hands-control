@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-import { AppConfig } from '@/utils/types';
+import { AppConfig } from '../../common/types/config';
 
 interface ConfigState {
   apps: AppConfig[];

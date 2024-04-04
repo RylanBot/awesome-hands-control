@@ -22,7 +22,7 @@ export const configMiddleware: Middleware<unknown, MiddlewareState> = store => n
       const config = await window.configApi.initialConfig();
       store.dispatch(getLocalConfig(config));
     } catch (error) {
-      console.error('Failed to fetch config: ', error);
+      console.error('Failed to fetch config', error);
     }
   }
 }

@@ -4,11 +4,11 @@ import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AppConfig } from '@/utils/types';
-
 import { PhotoIcon } from '@heroicons/react/24/solid';
 
 import ToastMessage from './ToastMessage';
+
+import { AppConfig } from '../../common/types/config';
 
 interface InputFile extends File {
     path: string;
@@ -78,10 +78,8 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             displayToast("Software already exists");
             return
         }
-        const updateSuccess = await window.configApi.updateAppConfig(appName, base64Icon);
-        if (updateSuccess) {
-            dispatch(updateTimestamp());
-        }
+        await window.configApi.updateAppConfig(appName, base64Icon);
+        dispatch(updateTimestamp());
         onClose();
     }
 

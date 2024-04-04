@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { useDispatch } from "react-redux";
 import { updateTimestamp } from "@/stores/configSlice";
-
-import { Shortcut } from "@/utils/types";
+import { useDispatch } from "react-redux";
 
 import { TrashIcon } from "@heroicons/react/24/solid";
+
+import { Shortcut } from "../../common/types/config";
 
 interface SettingCardProp {
     shortcut: Shortcut;
@@ -28,11 +28,9 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
     }
 
     async function handleConfirmDelete() {
-        const deleteSuccess = await window.configApi.deleteShortcutConfig(software!, shortcut.keyCombination);
-        if (deleteSuccess) {
-            dispatch(updateTimestamp());
-            setShowDeleteConfirm(false);
-        }
+        await window.configApi.deleteShortcutConfig(software!, shortcut.keyCombination);
+        dispatch(updateTimestamp());
+        setShowDeleteConfirm(false);
     }
 
     return (

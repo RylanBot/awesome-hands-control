@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { useDispatch, useSelector } from 'react-redux';
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { AppConfig, Shortcut } from '@/utils/types';
-import { HAND_IMG_PATHS } from '@/utils/constants'
-import { KeyboardEventKeyCodeToRobotJSKeyCode } from "@/utils/KeyboardUtils";
+import { KeyboardEventKeyCodeToRobotJSKeyCode } from "@/helpers/KeyboardUtils";
 
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
+
+import { HAND_IMG_PATHS } from '../../common/constants/config';
+import { AppConfig, Shortcut } from '../../common/types/config';
 
 /**
  * 全局设置的特定操作
@@ -22,7 +23,7 @@ const controlKeys = [
 
 const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { software } = useParams();
-    
+
     const dispatch = useDispatch();
     const appConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
 
@@ -88,11 +89,8 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             removable: true
         }
 
-        const applySuccess = await window.configApi.updateShortcutConfig(software!, shortcut);
-        if (applySuccess) {
-            dispatch(updateTimestamp());
-        }
-
+        await window.configApi.updateShortcutConfig(software!, shortcut);
+        dispatch(updateTimestamp());
         onClose();
     }
 

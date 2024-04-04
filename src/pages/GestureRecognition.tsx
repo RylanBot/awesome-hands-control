@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import Webcam from 'react-webcam';
 import { FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
+import Webcam from 'react-webcam';
 
-import { useSelector } from 'react-redux';
 import { RootState } from '@/stores/redux';
-
-import { AppConfig, Shortcut } from '@/utils/types';
-import useVideoFrames from "@/hooks/useVideoFrames";
+import { useSelector } from 'react-redux';
 
 import Loading from '@/components/Loading';
+import useVideoFrames from "@/hooks/useVideoFrames";
+
+import { AppConfig, Shortcut } from '../../common/types/config';
 
 interface HandGestureData {
     handLandmarks: Landmark[];
@@ -52,7 +52,7 @@ const GestureRecognition: React.FC = () => {
     useEffect(() => {
         if (canvasRef.current && !transferredRef.current) {
             const offscreen = canvasRef.current.transferControlToOffscreen();
-            workerRef.current = new Worker(new URL('../utils/CanvasWorker.ts', import.meta.url));
+            workerRef.current = new Worker(new URL('../helpers/CanvasWorker.ts', import.meta.url));
             workerRef.current.postMessage({ canvas: offscreen }, [offscreen]);
             transferredRef.current = true;
         }

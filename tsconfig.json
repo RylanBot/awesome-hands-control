@@ -22,6 +22,6 @@
       ]
     },
   },
-  "include": ["src", "electron"],
+  "include": ["src", "electron", "common"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
