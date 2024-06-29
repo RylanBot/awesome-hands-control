@@ -4,9 +4,9 @@ import { useParams } from "react-router-dom";
 import { updateTimestamp } from "@/stores/configSlice";
 import { useDispatch } from "react-redux";
 
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { Shortcut } from "@common/types/config";
 
-import { Shortcut } from "../../common/types/config";
+import { TrashIcon } from "@heroicons/react/24/solid";
 
 interface SettingCardProp {
     shortcut: Shortcut;

@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import path from 'node:path';
 
-import { VITE_DEV_SERVER_URL, iconSuffix } from '../../common/constants/environment';
+import { VITE_DEV_SERVER_URL, iconSuffix } from '@common/constants/environment';
 
 class MainWindow {
     private window: BrowserWindow | null = null;

@@ -1,8 +1,8 @@
 import log from 'electron-log/main';
 import ElectronStore from "electron-store";
 
-import { DEFAULT_CONFIG, DEFAULT_SHORTCUTS } from "../../common/constants/config";
-import { AppConfig, AppConfigV0, Shortcut } from "../../common/types/config";
+import { DEFAULT_CONFIG, DEFAULT_SHORTCUTS } from "@common/constants/config";
+import { AppConfig, AppConfigV0, Shortcut } from "@common/types/config";
 
 let localConfig: AppConfig[] = [];
 

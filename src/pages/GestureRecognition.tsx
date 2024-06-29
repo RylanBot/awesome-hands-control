@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import Loading from '@/components/Loading';
 import useVideoFrames from "@/hooks/useVideoFrames";
 
-import { AppConfig, Shortcut } from '../../common/types/config';
+import { AppConfig, Shortcut } from '@common/types/config';
 
 interface HandGestureData {
     handLandmarks: Landmark[];

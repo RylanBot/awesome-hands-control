@@ -9,8 +9,8 @@ import { KeyboardEventKeyCodeToRobotJSKeyCode } from "@/helpers/KeyboardUtils";
 
 import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
-import { HAND_IMG_PATHS } from '../../common/constants/config';
-import { AppConfig, Shortcut } from '../../common/types/config';
+import { HAND_IMG_PATHS } from '@common/constants/config';
+import { AppConfig, Shortcut } from '@common/types/config';
 
 /**
  * 全局设置的特定操作
@@ -167,6 +167,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }, [clearOnNextKey, inputError]);
 
     const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
+    
     return (
         <div className="fixed inset-0 flex items-center justify-center">
             {/* 半透明遮罩 */}

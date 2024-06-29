@@ -5,8 +5,9 @@ type VideoEventListenerMap = {
 };
 
 /**
- * A web API for performing efficient operations on each video frame
- * https://web.dev/requestvideoframecallback-rvfc/
+ * 允许开发者在每个视频帧被渲染到屏幕时执行特定的回调函数
+ * 确保处理操作与视频播放同步
+ * @see https://web.dev/requestvideoframecallback-rvfc/
  */
 const useVideoFrames = (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,7 +22,7 @@ const useVideoFrames = (
         if (!video) return;
 
         let frameId: number | null;
-        let requestFrame = requestAnimationFrame;
+        let requestFrame = requestAnimationFrame; // 处理视频的兼容方法
         let cancelFrame = cancelAnimationFrame;
 
         if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {

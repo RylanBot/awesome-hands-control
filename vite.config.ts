@@ -1,14 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
 
-import react from '@vitejs/plugin-react'
-import electron from 'vite-plugin-electron/simple'
+import alias from "@rollup/plugin-alias";
+import react from '@vitejs/plugin-react';
+import electron from 'vite-plugin-electron/simple';
 
-import { rmSync } from 'node:fs'
-import path from 'node:path'
+import { rmSync } from 'node:fs';
+import path from 'node:path';
 
-import pkg from './package.json'
+import pkg from './package.json';
 
-// https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   rmSync('dist-electron', { recursive: true, force: true })
 
@@ -19,6 +19,7 @@ export default defineConfig(({ command }) => {
   return {
     resolve: {
       alias: {
+        '@common': path.join(__dirname, 'common'),
         '@': path.join(__dirname, 'src')
       },
     },
@@ -26,7 +27,6 @@ export default defineConfig(({ command }) => {
       react(),
       electron({
         main: {
-          // Shortcut of `build.lib.entry`
           entry: 'electron/main.ts',
           onstart(args) {
             if (process.env.VSCODE_DEBUG) {
@@ -42,13 +42,21 @@ export default defineConfig(({ command }) => {
               outDir: 'dist-electron/',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                plugins: [
+                  alias({
+                    entries: [
+                      {
+                        find: "@common",
+                        replacement: path.join(__dirname, 'common')
+                      },
+                    ],
+                  })
+                ]
               },
             },
           },
         },
         preload: {
-          // Shortcut of `build.rollupOptions.input`.
-          // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
           input: 'electron/preload.ts',
           vite: {
             build: {
@@ -57,13 +65,20 @@ export default defineConfig(({ command }) => {
               outDir: 'dist-electron/',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                plugins: [
+                  alias({
+                    entries: [
+                      {
+                        find: "@common",
+                        replacement: path.join(__dirname, 'common')
+                      },
+                    ],
+                  })
+                ]
               },
             },
           },
         },
-        // Ployfill the Electron and Node.js API for Renderer process.
-        // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
-        // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
       }),
     ],

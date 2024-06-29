@@ -11,7 +11,7 @@ import ConfigStore, { deleteAppConfig, deleteShortcutConfig, loadInitialConfig, 
 import CameraWindow from './windows/CameraWindow';
 import MainWindow from './windows/MainWindow';
 
-import { Shortcut } from '../common/types/config';
+import { Shortcut } from '@common/types/config';
 
 global.__filename = fileURLToPath(import.meta.url)
 global.__dirname = dirname(__filename)

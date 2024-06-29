@@ -4,11 +4,11 @@ import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { AppConfig } from '@common/types/config';
+
 import { PhotoIcon } from '@heroicons/react/24/solid';
 
 import ToastMessage from './ToastMessage';
-
-import { AppConfig } from '../../common/types/config';
 
 interface InputFile extends File {
     path: string;

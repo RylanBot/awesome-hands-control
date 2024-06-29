@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
-import { Shortcut } from '../common/types/config'
+import { Shortcut } from '@common/types/config'
 
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 

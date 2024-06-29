@@ -4,7 +4,7 @@ import log from 'electron-log/main';
 import activeWindow from 'active-win';
 import path from 'node:path';
 
-import { VITE_DEV_SERVER_URL, iconSuffix } from '../../common/constants/environment';
+import { VITE_DEV_SERVER_URL, iconSuffix } from '@common/constants/environment';
 
 class CameraWindow {
     private window: BrowserWindow | null = null;
