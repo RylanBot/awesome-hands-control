@@ -14,7 +14,6 @@ dist-electron
 release
 build
 *.local
-*.lock
 
 # Editor directories and files
 .vscode/*
