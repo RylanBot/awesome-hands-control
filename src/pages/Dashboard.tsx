@@ -9,7 +9,7 @@ import SoftwareModal from "@/components/SoftwareModal";
 
 import { PlusIcon } from "@heroicons/react/24/solid";
 
-import { AppConfig } from "@common/types/config";
+import type { AppConfig } from "@common/types/config";
 
 const Dashboard: React.FC = () => {
     const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
@@ -44,8 +44,8 @@ const Dashboard: React.FC = () => {
                         className="bg-white border rounded-lg shadow-md w-48 h-48 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-shadow"
                         onClick={() => setModalOpen(true)}
                     >
-                        <PlusIcon className="h-12 w-12 text-teal-500" />
-                        <span className="text-md font-bold text-gray-700 mt-3">Add Software</span>
+                        <PlusIcon className="h-14 w-14 text-teal-500 my-3" />
+                        <span className="text-md font-bold text-gray-700 mt-0.5">Add Software</span>
                     </div>
 
                     {isModalOpen && <SoftwareModal onClose={() => setModalOpen(false)} />}
