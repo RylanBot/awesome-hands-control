@@ -2,7 +2,7 @@ import log from 'electron-log/main';
 import ElectronStore from "electron-store";
 
 import { DEFAULT_CONFIG, DEFAULT_SHORTCUTS } from "@common/constants/config";
-import { AppConfig, AppConfigV0, Shortcut } from "@common/types/config";
+import type { AppConfig, AppConfigV0, Shortcut } from "@common/types/config";
 
 let localConfig: AppConfig[] = [];
 
@@ -46,12 +46,12 @@ export async function loadInitialConfig() {
         return resConfig;
     }
 
-    localConfig = convertConfigFormat(configStore.get('apps') as AppConfig[] | AppConfigV0[]);
-
-    if (localConfig.length === 0) {
+    const config = configStore.get('apps');
+    if (!config) {
         localConfig = DEFAULT_CONFIG;
         configStore.set('apps', localConfig);
-        return;
+    } else {
+        localConfig = convertConfigFormat(config as AppConfig[] | AppConfigV0[]);
     }
 
     const globalIndex = localConfig.findIndex(config => config.name === 'Global');
