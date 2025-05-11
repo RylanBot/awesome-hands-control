@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import Loading from '@/components/Loading';
 import useVideoFrames from "@/hooks/useVideoFrames";
 
-import { AppConfig, Shortcut } from '@common/types/config';
+import type { AppConfig, Shortcut } from '@common/types/config';
 
 interface HandGestureData {
     handLandmarks: Landmark[];
@@ -211,25 +211,33 @@ const GestureRecognition: React.FC = () => {
         }
     }
 
+    function handleCameraChange(event: React.ChangeEvent<HTMLSelectElement>) {
+        const target = event.target.value;
+        const targetCamera = cameraDevices.find((camera) => camera.deviceId === target) ?? null;
+        setSelectedCameraDevice(targetCamera)
+    }
+
     return (
         <>
             {!isModelLoaded && <Loading />}
 
             {/* 摄像机 */}
             <div className="relative flex justify-center items-center h-screen w-screen">
-                {selectedCameraDevice && <Webcam ref={webcamRef}
-                    className="absolute"
-                    style={{
-                        transform: "scaleX(-1)", // 前置摄像头镜像
-                        width: '100%',
-                        height: '100%',
-                        objectFit: "fill" // 解决全屏填充的关键
-                    }}
-                    onUserMedia={() => {
-                        setVideo(webcamRef.current!.video)
-                    }}
-                    videoConstraints={{ deviceId: selectedCameraDevice.deviceId }}
-                />}
+                {selectedCameraDevice && (
+                    <Webcam ref={webcamRef}
+                        className="absolute"
+                        style={{
+                            transform: "scaleX(-1)", // 前置摄像头镜像
+                            width: '100%',
+                            height: '100%',
+                            objectFit: "fill" // 解决全屏填充的关键
+                        }}
+                        onUserMedia={() => {
+                            setVideo(webcamRef.current!.video)
+                        }}
+                        videoConstraints={{ deviceId: selectedCameraDevice.deviceId }}
+                    />
+                )}
                 <canvas ref={canvasRef}
                     width={850}
                     height={600}
@@ -245,12 +253,12 @@ const GestureRecognition: React.FC = () => {
             {/* 输出的识别手势标签 */}
             <div className='absolute top-0 w-screen px-4 py-2 mt-8'>
                 {detectedGestures.left && (
-                    <div className="float-left bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
+                    <div key="left" className="float-left bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
                         {detectedGestures.left}
                     </div>
                 )}
                 {detectedGestures.right && (
-                    <div className="float-right bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
+                    <div key="right" className="float-right bg-slate-500 text-white px-3 py-2 rounded-lg shadow-lg">
                         {detectedGestures.right}
                     </div>
                 )}
@@ -259,14 +267,12 @@ const GestureRecognition: React.FC = () => {
             {/* 相机切换选项 */}
             <div className='absolute bottom-0 w-screen px-4 py-2 mt-8 select-wrapper'>
                 <form className="max-w-sm mx-auto">
-                    <select value={selectedCameraDevice?.deviceId} onChange={e => { setSelectedCameraDevice(() => cameraDevices.find((camera) => camera.deviceId === e.target.value) ?? null) }} id="webcam-selector"
+                    <select value={selectedCameraDevice?.deviceId} onChange={handleCameraChange}
                         className="text-center bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full p-2.5">
                         {cameraDevices.map((camera) =>
-                            <>
-                                <option value={camera.deviceId} key={camera.deviceId}>
-                                    {camera.label}
-                                </option>
-                            </>
+                            <option value={camera.deviceId} key={camera.deviceId}>
+                                {camera.label}
+                            </option>
                         )}
                     </select>
                 </form>
