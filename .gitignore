@@ -25,3 +25,7 @@ build
 *.njsproj
 *.sln
 *.sw?
+
+# Yarn
+.yarn
+.yarnrc.yml
