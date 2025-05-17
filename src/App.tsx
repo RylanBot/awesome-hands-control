@@ -4,12 +4,8 @@ import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 import { updateConfig } from "@/stores/configSlice";
 import { useDispatch } from "react-redux";
 
-import Dashboard from "@/pages/Dashboard";
-import EmptySlot from "@/pages/EmptySlot";
-import GestureRecognition from "@/pages/GestureRecognition";
-import SettingPage from "@/pages/SettingPage";
-
 import { CameraWindowBar, MainWindowBar } from "@/components/WindowBar";
+import { Dashboard, EmptySlot, GestureRecognition, SettingPage } from "@/pages";
 
 const MainLayout = () => {
   return (

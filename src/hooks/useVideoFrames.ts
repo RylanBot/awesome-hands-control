@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type VideoEventListenerMap = {
     [EventName in keyof HTMLMediaElementEventMap]?: EventListener;
