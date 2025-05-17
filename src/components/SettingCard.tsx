@@ -42,8 +42,8 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
                             {/* 快捷键 */}
                             <span>{shortcut.keyCombination}</span>
                             {/* 禁用按钮 */}
-                            <label className="absolute top-9 left-10 cursor-pointer" onClick={toggleShortcut}>
-                                <input type="checkbox" className="sr-only peer" checked={shortcut.enabled} />
+                            <label className="absolute top-9 left-10 cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={shortcut.enabled} onChange={toggleShortcut} />
                                 <div className="relative w-11 h-6 bg-gray-200 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-200"></div>
                             </label>
                             {/* 删除按钮 */}
