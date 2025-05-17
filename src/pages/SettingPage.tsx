@@ -6,8 +6,7 @@ import type { AppConfig } from '@common/types/config';
 import { RootState } from '@/stores/redux';
 import { useSelector } from 'react-redux';
 
-import SettingCard from '@/components/SettingCard';
-import SettingModal from '@/components/SettingModal';
+import { SettingCard, SettingModal } from '@/components';
 import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 const SettingPage: React.FC = () => {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { BarsArrowDownIcon, BarsArrowUpIcon, MinusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
-const MainWindowBar: React.FC = () => {
+export const MainWindowBar: React.FC = () => {
     const windowName = 'main'
 
     return (
@@ -27,8 +27,7 @@ const MainWindowBar: React.FC = () => {
     );
 }
 
-
-const CameraWindowBar: React.FC = () => {
+export const CameraWindowBar: React.FC = () => {
     const windowName = 'camera'
 
     const [isInCorner, setIsInCorner] = useState<boolean>(false)
@@ -75,6 +74,3 @@ const CameraWindowBar: React.FC = () => {
         </div>
     );
 }
-
-export { CameraWindowBar, MainWindowBar };
-

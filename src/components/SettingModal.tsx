@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { HAND_IMG_PATHS, MOUSE_CLICK_RIGHT } from '@common/constants/config';

@@ -5,9 +5,8 @@ import { useSelector } from "react-redux";
 
 import type { AppConfig } from "@common/types/config";
 
-import Sidebar from "@/components/Sidebar";
+import { Sidebar, SoftwareModal } from "@/components";
 import { GlobalSoftwareCard, SoftwareCard } from "@/components/SoftwareCard";
-import SoftwareModal from "@/components/SoftwareModal";
 import { PlusIcon } from "@heroicons/react/24/solid";
 
 const Dashboard: React.FC = () => {

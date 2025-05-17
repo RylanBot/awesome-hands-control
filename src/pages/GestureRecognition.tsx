@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { FilesetResolver, GestureRecognizer, GestureRecognizerResult, Landmark } from '@mediapipe/tasks-vision';
 import Webcam from 'react-webcam';
 
+import type { AppConfig, Shortcut } from '@common/types/config';
+
 import { RootState } from '@/stores/redux';
 import { useSelector } from 'react-redux';
 
-import Loading from '@/components/Loading';
+import { Loading } from '@/components';
 import useVideoFrames from "@/hooks/useVideoFrames";
-
-import type { AppConfig, Shortcut } from '@common/types/config';
 
 interface HandGestureData {
     handLandmarks: Landmark[];
