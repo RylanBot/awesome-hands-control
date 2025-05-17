@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, shell } from 'electron';
+import { app, ipcMain, screen, shell } from 'electron';
 import log from 'electron-log/main';
 
 import { readFileSync } from 'node:fs';
@@ -26,26 +26,20 @@ process.on('uncaughtException', (error) => {
 let mainWindow: MainWindow | null = null;
 let cameraWindow: CameraWindow | null = null;
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-    mainWindow?.getWindow()?.destroy();
-    cameraWindow?.getWindow()?.destroy();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    mainWindow = new MainWindow();
-  }
-});
-
 app.whenReady().then(async () => {
   try {
     await loadInitialConfig();
     mainWindow = new MainWindow();
   } catch (error) {
     log.error("initialConfig", error);
+  }
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+    mainWindow?.getWindow()?.destroy();
+    cameraWindow?.getWindow()?.destroy();
   }
 });
 
