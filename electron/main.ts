@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import type { Shortcut } from '@common/types/config';
 
-import { triggerMouse, triggerShortcut } from './helpers/RobotService';
+import { triggerMouse, triggerShortcut } from './helpers/robotService';
 import { deleteAppConfig, deleteShortcutConfig, getLocalConfig, loadInitialConfig, toggleShortcutConfig, updateAppConfig, updateShortcutConfig } from './stores/configStore';
 
 import CameraWindow from './windows/CameraWindow';

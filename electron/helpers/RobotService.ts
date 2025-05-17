@@ -3,10 +3,6 @@ import log from 'electron-log/main';
 
 import { MOUSE_CLICK_RIGHT, MOUSE_CURSOR, MOUSE_SCROLL } from '@common/constants/config';
 
-let lastMousePosition = { x: 0, y: 0 };
-let clickTimer: NodeJS.Timeout | null = null;
-let doubleClickTimer: NodeJS.Timeout | null = null;
-
 const VALID_MODIFIERS = ['alt', 'right_alt', 'command', 'control', 'left_control', 'right_control', 'shift', 'right_shift', 'win'];
 
 const SPECIAL_SHORTCUTS = new Map<string, () => void>([
@@ -47,48 +43,47 @@ export function triggerShortcut(keyCombination: string) {
     }
 }
 
-export function triggerMouse(delta: { x: number, y: number }, isLeftHand: boolean) {
-    const processCursor = (delta: { x: number, y: number }) => {
-        const mouse = robot.getMousePos();
-        robot.moveMouseSmooth(mouse.x + delta.x, mouse.y + delta.y, 1);
+export const triggerMouse = (() => {
+    let lastMousePosition = { x: 0, y: 0 };
+    let clickTimer: NodeJS.Timeout | null = null;
+    let doubleClickTimer: NodeJS.Timeout | null = null;
 
-        const resetTimers = () => {
-            if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
-            if (doubleClickTimer) { clearTimeout(doubleClickTimer); doubleClickTimer = null; }
-        }
+    const resetTimers = () => {
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
+        if (doubleClickTimer) { clearTimeout(doubleClickTimer); doubleClickTimer = null; }
+    };
 
-        // 如果鼠标位置变化，则重置定时器
-        if (lastMousePosition.x !== mouse.x || lastMousePosition.y !== mouse.y) {
-            lastMousePosition = { x: mouse.x, y: mouse.y };
-            resetTimers();
-        }
+    return (delta: { x: number, y: number }, isLeftHand: boolean) => {
+        try {
+            if (isLeftHand) {
+                robot.scrollMouse(delta.x / 2, delta.y / 2);
+            } else {
+                const mouse = robot.getMousePos();
+                robot.moveMouseSmooth(mouse.x + delta.x, mouse.y + delta.y, 1);
 
-        // 停留两秒触发左单击
-        if (!clickTimer) {
-            clickTimer = setTimeout(() => {
-                robot.mouseClick('left', false);
-                resetTimers();
-            }, 2000);
-        }
+                if (lastMousePosition.x !== mouse.x || lastMousePosition.y !== mouse.y) {
+                    lastMousePosition = { x: mouse.x, y: mouse.y };
+                    resetTimers();
+                }
 
-        // 停留四秒触发左双击
-        if (!doubleClickTimer) {
-            doubleClickTimer = setTimeout(() => {
-                robot.mouseClick('left', true);
-                resetTimers();
-            }, 4000);
-        }
-    }
+                // 停留两秒触发左单击
+                if (!clickTimer) {
+                    clickTimer = setTimeout(() => {
+                        robot.mouseClick('left', false);
+                        resetTimers();
+                    }, 2000);
+                }
 
-    try {
-        if (isLeftHand) {
-            // 左手触发滚轮
-            robot.scrollMouse(delta.x / 2, delta.y / 2);
-        } else {
-            // 右手触发鼠标光标
-            processCursor(delta)
+                // 停留四秒触发左双击
+                if (!doubleClickTimer) {
+                    doubleClickTimer = setTimeout(() => {
+                        robot.mouseClick('left', true);
+                        resetTimers();
+                    }, 4000);
+                }
+            }
+        } catch (error) {
+            log.error("triggerMouse", error);
         }
-    } catch (error) {
-        log.error("triggerMouse", error);
-    }
-}
+    };
+})();

@@ -1,5 +1,4 @@
 import { BrowserWindow, Tray } from 'electron';
-import log from 'electron-log/main';
 import { activeWindow } from 'get-windows';
 import path from 'node:path';
 
@@ -82,7 +81,7 @@ class CameraWindow {
                     lastProcessName = processName;
                 }
             } catch (error) {
-                log.error('runWindowMonitor', error);
+                // log.error('runWindowMonitor', error);
             }
         }, 1000);
 
