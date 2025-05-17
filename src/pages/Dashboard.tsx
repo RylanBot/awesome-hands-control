@@ -3,13 +3,12 @@ import { useState } from "react";
 import { RootState } from "@/stores/redux";
 import { useSelector } from "react-redux";
 
+import type { AppConfig } from "@common/types/config";
+
 import Sidebar from "@/components/Sidebar";
 import { GlobalSoftwareCard, SoftwareCard } from "@/components/SoftwareCard";
 import SoftwareModal from "@/components/SoftwareModal";
-
 import { PlusIcon } from "@heroicons/react/24/solid";
-
-import type { AppConfig } from "@common/types/config";
 
 const Dashboard: React.FC = () => {
     const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
+import type { Shortcut } from "@common/types/config";
+
 import { updateTimestamp } from "@/stores/configSlice";
 import { useDispatch } from "react-redux";
-
-import { Shortcut } from "@common/types/config";
 
 import { TrashIcon } from "@heroicons/react/24/solid";
 
@@ -43,7 +43,7 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
                             <span>{shortcut.keyCombination}</span>
                             {/* 禁用按钮 */}
                             <label className="absolute top-9 left-10 cursor-pointer" onClick={toggleShortcut}>
-                                <input type="checkbox" className="sr-only peer" checked={shortcut.enabled} onChange={() => { }} />
+                                <input type="checkbox" className="sr-only peer" checked={shortcut.enabled} />
                                 <div className="relative w-11 h-6 bg-gray-200 rounded-full peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-200"></div>
                             </label>
                             {/* 删除按钮 */}

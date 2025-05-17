@@ -1,13 +1,12 @@
 import React, { useRef, useState } from 'react';
 
+import type { AppConfig } from '@common/types/config';
+
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { AppConfig } from '@common/types/config';
-
 import { PhotoIcon } from '@heroicons/react/24/solid';
-
 import ToastMessage from './ToastMessage';
 
 interface InputFile extends File {

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
+
+import { HAND_IMG_PATHS, MOUSE_CLICK_RIGHT } from '@common/constants/config';
+import type { AppConfig, Shortcut } from '@common/types/config';
 
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
@@ -8,8 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { normalizeKeyCode } from "@/helpers/KeyboardUtils";
 
-import { HAND_IMG_PATHS, MOUSE_CLICK_RIGHT } from '@common/constants/config';
-import type { AppConfig, Shortcut } from '@common/types/config';
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 /**
  * 全局设置的特定操作
