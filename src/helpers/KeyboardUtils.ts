@@ -24,10 +24,17 @@ const KEYS_MAPPINGS = new Map<string, string>(
                 ["ControlRight", "right_control"],
                 ["MetaRight", "command"],
                 ["ShiftRight", "right_shift"],
+                ["ArrowUp", "up"],
+                ["ArrowDown", "down"],
+                ["ArrowLeft", "left"],
+                ["ArrowRight", "right"],
         ]
 )
 
-export async function KeyboardEventKeyCodeToRobotJSKeyCode(keyCode: string): Promise<string> {
+/**
+ * 将键盘输入转换为 `robotjs` 能识别的格式
+ */
+export async function normalizeKeyCode(keyCode: string): Promise<string> {
         const keyboardLayoutMap = await navigator.keyboard.getLayoutMap();
         const correspondingKey = keyboardLayoutMap.get(keyCode);
         if (correspondingKey) {

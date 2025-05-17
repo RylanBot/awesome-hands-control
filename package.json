@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.1",
-    "@hurdlegroup/robotjs": "^0.11.4",
+    "@hurdlegroup/robotjs": "^0.12.3",
     "@mediapipe/tasks-vision": "0.10.12",
     "@reduxjs/toolkit": "^2.2.1",
     "electron-log": "^5.1.1",

@@ -1,22 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KeyboardEventKeyCodeToRobotJSKeyCode } from "@/helpers/KeyboardUtils";
+import { normalizeKeyCode } from "@/helpers/KeyboardUtils";
 
-import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
-
-import { HAND_IMG_PATHS } from '@common/constants/config';
-import { AppConfig, Shortcut } from '@common/types/config';
+import { HAND_IMG_PATHS, MOUSE_CLICK_RIGHT } from '@common/constants/config';
+import type { AppConfig, Shortcut } from '@common/types/config';
 
 /**
  * 全局设置的特定操作
  */
 const controlKeys = [
-    'mouse_click (right)',
+    MOUSE_CLICK_RIGHT,
     'audio_vol_down', 'audio_vol_up', 'audio_pause',
     'audio_mute', 'audio_prev', 'audio_next'
 ];
@@ -135,7 +134,8 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 setClearOnNextKey(false);
             }
 
-            const keyToAdd = await KeyboardEventKeyCodeToRobotJSKeyCode(event.code);
+            const keyToAdd = await normalizeKeyCode(event.code);
+            console.log('keyToAdd', event.code, keyToAdd);
 
             setKeyCombination(prevCombination => {
                 let keys = prevCombination ? prevCombination.split('+') : [];
@@ -167,7 +167,7 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }, [clearOnNextKey, inputError]);
 
     const placeholderText = software === "Global" ? "Input your shortcut or select a operation" : "Input your shortcut";
-    
+
     return (
         <div className="fixed inset-0 flex items-center justify-center">
             {/* 半透明遮罩 */}

@@ -15,16 +15,20 @@ export const HAND_IMG_PATHS: { left: string[]; right: string[] } = {
     ]
 };
 
+export const MOUSE_CLICK_RIGHT = "mouse_click (right)";
+export const MOUSE_SCROLL = "Mouse Scroll";
+export const MOUSE_CURSOR = "Mouse Cursor";
+
 export const DEFAULT_SHORTCUTS = [
     {
-        keyCombination: "Mouse Scroll",
+        keyCombination: MOUSE_SCROLL,
         gestureLeft: "Pointing_Up",
         gestureRight: "",
         enabled: true,
         removable: false,
     },
     {
-        keyCombination: "Mouse Cursor",
+        keyCombination: MOUSE_CURSOR,
         gestureLeft: "NOTE",
         gestureRight: "Pointing_Up",
         enabled: true,
