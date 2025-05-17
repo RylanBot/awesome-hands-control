@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
-import { Shortcut } from '@common/types/config'
+import type { Shortcut } from '@common/types/config'
 
 contextBridge.exposeInMainWorld('ipcRenderer', withPrototype(ipcRenderer))
 
@@ -39,7 +39,7 @@ contextBridge.exposeInMainWorld('configApi', {
   updateAppConfig: async (appPath: string, base64Icon: string) => { return ipcRenderer.invoke('updateAppConfig', appPath, base64Icon); },
   deleteAppConfig: async (appName: string) => { return ipcRenderer.invoke('deleteAppConfig', appName); },
   updateShortcutConfig: async (appName: string, shortcut: Shortcut) => { return ipcRenderer.invoke('updateShortcutConfig', appName, shortcut); },
-  deleteShortcutConfig: async (appName: string, keyCombination: string) => { return ipcRenderer.invoke('deleteShortcutConfig', appName, keyCombination); },
+  deleteShortcutConfig: async (appName: string, shortcut: Shortcut) => { return ipcRenderer.invoke('deleteShortcutConfig', appName, shortcut); },
   toggleShortcutConfig: async (appName: string, shortcut: Shortcut) => { return ipcRenderer.invoke('toggleShortcutConfig', appName, shortcut); },
   getBase64Icon: async (appPath: string) => { return ipcRenderer.invoke('getBase64Icon', appPath); },
   getProjectVersion: () => { return ipcRenderer.invoke('getProjectVersion'); }

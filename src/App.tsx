@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
+import { updateConfig } from "@/stores/configSlice";
 import { useDispatch } from "react-redux";
-import { getLocalConfig } from "@/stores/configSlice";
-
-import { CameraWindowBar, MainWindowBar } from "@/components/WindowBar";
 
 import Dashboard from "@/pages/Dashboard";
 import EmptySlot from "@/pages/EmptySlot";
 import GestureRecognition from "@/pages/GestureRecognition";
 import SettingPage from "@/pages/SettingPage";
+
+import { CameraWindowBar, MainWindowBar } from "@/components/WindowBar";
 
 const MainLayout = () => {
   return (
@@ -37,7 +37,7 @@ const App = () => {
     async function initializeConfig() {
       try {
         const config = await window.configApi.initialConfig();
-        dispatch(getLocalConfig(config));
+        dispatch(updateConfig(config));
       } catch (error) {
         console.error('Failed to initialize config: ', error);
       }

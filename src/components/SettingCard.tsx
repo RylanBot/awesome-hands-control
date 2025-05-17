@@ -28,7 +28,7 @@ const SettingCard: React.FC<SettingCardProp> = ({ shortcut }) => {
     }
 
     async function handleConfirmDelete() {
-        await window.configApi.deleteShortcutConfig(software!, shortcut.keyCombination);
+        await window.configApi.deleteShortcutConfig(software!, shortcut);
         dispatch(updateTimestamp());
         setShowDeleteConfirm(false);
     }

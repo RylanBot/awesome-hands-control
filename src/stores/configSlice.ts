@@ -1,6 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
-import { AppConfig } from '@common/types/config';
+import type { AppConfig } from '@common/types/config';
 
 interface ConfigState {
   apps: AppConfig[];
@@ -17,7 +17,7 @@ const configSlice = createSlice({
   initialState,
   reducers: {
     // 根据 electron-store 返回的数据整个替换
-    getLocalConfig: (state, action: PayloadAction<AppConfig[]>) => {
+    updateConfig: (state, action: PayloadAction<AppConfig[]>) => {
       state.apps = action.payload;
     },
     updateTimestamp: (state) => {
@@ -26,5 +26,5 @@ const configSlice = createSlice({
   },
 });
 
-export const { getLocalConfig, updateTimestamp } = configSlice.actions;
+export const { updateConfig, updateTimestamp } = configSlice.actions;
 export default configSlice.reducer;

@@ -6,10 +6,16 @@ import type { AppConfig, AppConfigV0, Shortcut } from "@common/types/config";
 
 let localConfig: AppConfig[] = [];
 
+const LOCAL_APPS_KEY = 'apps';
+
 const configStore = new ElectronStore({
     name: 'awesome-hands-config',
     fileExtension: 'json',
 });
+
+export function getLocalConfig() {
+    return localConfig;
+}
 
 export async function loadInitialConfig() {
     /**
@@ -46,10 +52,10 @@ export async function loadInitialConfig() {
         return resConfig;
     }
 
-    const config = configStore.get('apps');
+    const config = configStore.get(LOCAL_APPS_KEY);
     if (!config) {
         localConfig = DEFAULT_CONFIG;
-        configStore.set('apps', localConfig);
+        configStore.set(LOCAL_APPS_KEY, localConfig);
     } else {
         localConfig = convertConfigFormat(config as AppConfig[] | AppConfigV0[]);
     }
@@ -63,7 +69,7 @@ export async function loadInitialConfig() {
     });
     localConfig[globalIndex] = globalConfig;
 
-    configStore.set('apps', localConfig);
+    configStore.set(LOCAL_APPS_KEY, localConfig);
 }
 
 export function updateAppConfig(appName: string, base64Icon: string) {
@@ -74,52 +80,61 @@ export function updateAppConfig(appName: string, base64Icon: string) {
     };
     try {
         localConfig.push(newApp);
-        configStore.set('apps', localConfig);
+        configStore.set(LOCAL_APPS_KEY, localConfig);
     } catch (error) {
         log.error(error)
     }
 }
 
 export function deleteAppConfig(appName: string) {
-    const index = localConfig.findIndex((appConfig) => appConfig.name === appName);
-    if (index !== -1) {
-        localConfig.splice(index, 1);
-        configStore.set('apps', localConfig);
+    const appIndex = localConfig.findIndex((appConfig) => appConfig.name === appName);
+    if (appIndex !== -1) {
+        localConfig.splice(appIndex, 1);
+        configStore.set(LOCAL_APPS_KEY, localConfig);
     }
 }
 
 export function updateShortcutConfig(appName: string, shortcut: Shortcut) {
-    const index = localConfig.findIndex((appConfig) => appConfig.name === appName);
-    if (index !== -1) {
-        const appConfig = localConfig[index];
+    const appIndex = localConfig.findIndex((appConfig) => appConfig.name === appName);
+    if (appIndex !== -1) {
+        const appConfig = localConfig[appIndex];
         appConfig.shortcuts.push(shortcut)
-        localConfig[index] = appConfig;
-        configStore.set('apps', localConfig);
+        localConfig[appIndex] = appConfig;
+        configStore.set(LOCAL_APPS_KEY, localConfig);
     }
 }
 
-export function deleteShortcutConfig(appName: string, keyCombination: string) {
-    const index = localConfig.findIndex((appConfig) => appConfig.name === appName);
-    if (index !== -1) {
-        const appConfig = localConfig[index];
-        appConfig.shortcuts = appConfig.shortcuts.filter((shortcut) => shortcut.keyCombination !== keyCombination);
-        localConfig[index] = appConfig;
-        configStore.set('apps', localConfig);
+function isTargetShortcut(a: Shortcut, b: Shortcut) {
+    return a.keyCombination === b.keyCombination &&
+        a.gestureLeft === b.gestureLeft &&
+        a.gestureRight === b.gestureRight
+}
+
+export function deleteShortcutConfig(appName: string, shortcut: Shortcut) {
+    const appIndex = localConfig.findIndex((appConfig) => appConfig.name === appName);
+    if (appIndex !== -1) {
+        const appConfig = localConfig[appIndex];
+        appConfig.shortcuts = appConfig.shortcuts.filter((s) =>
+            !isTargetShortcut(s, shortcut)
+        );
+        localConfig[appIndex] = appConfig;
+        configStore.set(LOCAL_APPS_KEY, localConfig);
     }
 }
 
 export function toggleShortcutConfig(appName: string, shortcut: Shortcut) {
-    const index = localConfig.findIndex((appConfig) => appConfig.name === appName);
-    if (index !== -1) {
-        const appConfig = localConfig[index];
-        shortcut.enabled = !shortcut.enabled;
-        appConfig.shortcuts = appConfig.shortcuts.map((el) => el.keyCombination === shortcut.keyCombination ? shortcut : el);
-        localConfig[index] = appConfig;
-        configStore.set('apps', localConfig);
+    const appIndex = localConfig.findIndex((appConfig) => appConfig.name === appName);
+    if (appIndex !== -1) {
+        const appConfig = localConfig[appIndex];
+        const updatedShortcut = { ...shortcut, enabled: !shortcut.enabled };
+
+        appConfig.shortcuts = appConfig.shortcuts.map((el) =>
+            isTargetShortcut(el, shortcut) ? updatedShortcut : el
+        );
+
+        localConfig[appIndex] = appConfig;
+        configStore.set(LOCAL_APPS_KEY, localConfig);
         return true;
     }
-}
-
-export default function ConfigStore() {
-    return localConfig;
+    return false;
 }

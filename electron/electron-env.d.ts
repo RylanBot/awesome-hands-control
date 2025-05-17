@@ -40,7 +40,7 @@ interface ConfigApi {
   updateAppConfig: (appName: string, base64Icon: string) => Promise<boolean>
   deleteAppConfig: (appName: string) => Promise<boolean>;
   updateShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
-  deleteShortcutConfig: (appName: string, keyCombination: string) => Promise<boolean>;
+  deleteShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
   toggleShortcutConfig: (appName: string, shortcut: Shortcut) => Promise<boolean>;
   getBase64Icon: (appPath: string) => Promise<string>
   getProjectVersion: () => Promise<string>;

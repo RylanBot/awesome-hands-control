@@ -1,5 +1,5 @@
 import { Middleware } from '@reduxjs/toolkit';
-import { getLocalConfig } from './configSlice';
+import { updateConfig } from './configSlice';
 
 interface MiddlewareState {
   config: {
@@ -20,7 +20,7 @@ export const configMiddleware: Middleware<unknown, MiddlewareState> = store => n
   if (previousLastUpdated !== currentLastUpdated) {
     try {
       const config = await window.configApi.initialConfig();
-      store.dispatch(getLocalConfig(config));
+      store.dispatch(updateConfig(config));
     } catch (error) {
       console.error('Failed to fetch config', error);
     }

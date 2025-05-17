@@ -5,13 +5,13 @@ import { readFileSync } from 'node:fs';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import type { Shortcut } from '@common/types/config';
+
 import { triggerMouse, triggerShortcut } from './helpers/RobotService';
-import ConfigStore, { deleteAppConfig, deleteShortcutConfig, loadInitialConfig, toggleShortcutConfig, updateAppConfig, updateShortcutConfig } from './stores/configStore';
+import { deleteAppConfig, deleteShortcutConfig, getLocalConfig, loadInitialConfig, toggleShortcutConfig, updateAppConfig, updateShortcutConfig } from './stores/configStore';
 
 import CameraWindow from './windows/CameraWindow';
 import MainWindow from './windows/MainWindow';
-
-import { Shortcut } from '@common/types/config';
 
 global.__filename = fileURLToPath(import.meta.url)
 global.__dirname = dirname(__filename)
@@ -130,7 +130,7 @@ ipcMain.on('resetCameraWindow', () => {
 
 // 读取初始化配置
 ipcMain.handle('initialConfig', async () => {
-  return ConfigStore();
+  return getLocalConfig();
 });
 
 // 添加软件
@@ -149,8 +149,8 @@ ipcMain.handle('updateShortcutConfig', async (_, appName: string, shortcut: Shor
 });
 
 // 删除快捷键
-ipcMain.handle('deleteShortcutConfig', async (_, appName, keyCombination: string) => {
-  deleteShortcutConfig(appName, keyCombination);
+ipcMain.handle('deleteShortcutConfig', async (_, appName, shortcut: Shortcut) => {
+  deleteShortcutConfig(appName, shortcut);
 });
 
 // 禁用快捷键
