@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 import { HAND_IMG_PATHS, MOUSE_CLICK_RIGHT } from '@common/constants/config';
 import type { AppConfig, Shortcut } from '@common/types/config';
 
 import { updateTimestamp } from '@/stores/configSlice';
 import { RootState } from '@/stores/redux';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { normalizeKeyCode } from "@/helpers/KeyboardUtils";
-
-import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 /**
  * 全局设置的特定操作
@@ -136,7 +136,6 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
 
             const keyToAdd = await normalizeKeyCode(event.code);
-            console.log('keyToAdd', event.code, keyToAdd);
 
             setKeyCombination(prevCombination => {
                 let keys = prevCombination ? prevCombination.split('+') : [];
@@ -177,10 +176,15 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             <div className="bg-white p-8 rounded-lg shadow-2xl relative max-w-3xl w-full">
                 {/* 关闭按钮 */}
                 <div className='mb-6'>
-                    <button onClick={() => onClose()} className="absolute top-4 right-24 text-gray-500 hover:text-yellow-900 focus:outline-none">
+                    <button
+                        className="absolute top-4 right-24 text-gray-500 hover:text-yellow-900 focus:outline-none"
+                        onClick={() => onClose()} 
+                    >
                         Cancel
                     </button>
-                    <button onClick={handleConfirmApply} className="absolute top-4 right-4 text-gray-500 hover:text-teal-500 focus:outline-none">
+                    <button
+                        className="absolute top-4 right-4 text-gray-500 hover:text-teal-500 focus:outline-none"
+                        onClick={handleConfirmApply}>
                         Apply
                     </button>
                 </div>
@@ -189,10 +193,10 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <div className="flex items-center space-x-2 relative">
                     {/* 快捷键输入 */}
                     <input
+                        className={`{flex-grow w-full border-2 border-gray-400 rounded-lg ${software === "Global" ? 'pl-12' : 'pl-4'} px-12 py-2 placeholder:font-normal placeholder:text-gray-400 text-teal-500 focus:ring-emerald-500 focus:ring-2 focus:border-transparent ml-2 mr-2 font-bold}`}
                         type="text"
                         value={keyCombination}
                         readOnly
-                        className={`{flex-grow w-full border-2 border-gray-400 rounded-lg ${software === "Global" ? 'pl-12' : 'pl-4'} px-12 py-2 placeholder:font-normal placeholder:text-gray-400 text-teal-500 focus:ring-emerald-500 focus:ring-2 focus:border-transparent ml-2 mr-2 font-bold}`}
                         ref={inputRef}
                         autoFocus
                         placeholder={placeholderText}
@@ -201,16 +205,20 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     {/* 错误信息提示 */}
                     {inputError && <span className="text-sm font-semibold text-red-500 absolute right-12">{inputError}</span>}
                     {/* 清空输入 */}
-                    <span className="absolute right-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-red-200 hover:bg-red-300 shadow-md"
-                        onClick={() => { setKeyCombination(''); setInputError('') }}>
+                    <span 
+                        className="absolute right-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-red-200 hover:bg-red-300 shadow-md"
+                        onClick={() => { setKeyCombination(''); setInputError('') }}
+                    >
                         <XMarkIcon />
                     </span>
 
                     {/* 下拉框（只开放给全局设置） */}
                     {software === "Global" && (
                         <>
-                            <span className="absolute left-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-green-200 hover:bg-green-300 shadow-md"
-                                onClick={() => { toggleDropdown() }}>
+                            <span 
+                                className="absolute left-4 cursor-pointer rounded-full w-5 h-5 p-1 bg-green-200 hover:bg-green-300 shadow-md"
+                                onClick={() => { toggleDropdown() }}
+                            >
                                 <ChevronDownIcon />
                             </span>
                             {isDropdownOpen && (
@@ -219,8 +227,8 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                                         {controlKeys.map(key => (
                                             <a
                                                 key={key}
-                                                onClick={() => selectKeyFromDropdown(key)}
                                                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                                onClick={() => selectKeyFromDropdown(key)}
                                             >
                                                 {key}
                                             </a>
@@ -239,11 +247,11 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <div key={index} className="flex flex-col items-center">
                             <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
+                                className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                                 type="checkbox"
                                 name="leftHandGesture"
                                 checked={hands.left === extractGestureName(HAND_IMG_PATHS.left[index])}
                                 onChange={() => handleHandSelect('left', extractGestureName(HAND_IMG_PATHS.left[index]))}
-                                className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
                     ))}
@@ -255,12 +263,12 @@ const SettingModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <div key={index} className="flex flex-col items-center">
                             <img src={`./images/hands/${img}.png`} className="w-24 h-24 object-cover" />
                             <input
+                                className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                                 type="checkbox"
                                 alt={img}
                                 name="rightHandGesture"
                                 checked={hands.right === extractGestureName(HAND_IMG_PATHS.right[index])}
                                 onChange={() => handleHandSelect('right', extractGestureName(HAND_IMG_PATHS.right[index]))}
-                                className="form-radio h-5 w-5 checked:bg-teal-500 text-teal-500 focus:ring-transparent"
                             />
                         </div>
                     ))}

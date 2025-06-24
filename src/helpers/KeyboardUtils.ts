@@ -34,7 +34,7 @@ const KEYS_MAPPINGS = new Map<string, string>(
 /**
  * 将键盘输入转换为 `robotjs` 能识别的格式
  */
-export async function normalizeKeyCode(keyCode: string): Promise<string> {
+export async function normalizeKeyCode(keyCode: string) {
         const keyboardLayoutMap = await navigator.keyboard.getLayoutMap();
         const correspondingKey = keyboardLayoutMap.get(keyCode);
         if (correspondingKey) {

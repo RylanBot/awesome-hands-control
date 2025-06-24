@@ -2,7 +2,7 @@ import { BrowserWindow, Tray } from 'electron';
 import { activeWindow } from 'get-windows';
 import path from 'node:path';
 
-import { VITE_DEV_SERVER_URL, iconSuffix } from '@common/constants/environment';
+import { ICON_SUFFIX, VITE_DEV_SERVER_URL } from '@common/constants/environment';
 
 class CameraWindow {
     private window: BrowserWindow | null = null;
@@ -16,7 +16,7 @@ class CameraWindow {
 
     private createWindow(): void {
         this.window = new BrowserWindow({
-            icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${iconSuffix}`),
+            icon: path.join(process.env.VITE_PUBLIC! as string, `./images/icons/CameraWindow.${ICON_SUFFIX}`),
             webPreferences: {
                 preload: path.join(__dirname, 'preload.mjs'),
                 nodeIntegration: false,

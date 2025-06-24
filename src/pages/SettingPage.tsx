@@ -1,13 +1,14 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 import type { AppConfig } from '@common/types/config';
 
 import { RootState } from '@/stores/redux';
-import { useSelector } from 'react-redux';
 
 import { SettingCard, SettingModal } from '@/components';
-import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/solid';
 
 const SettingPage: React.FC = () => {
     const { software } = useParams(); // 变量名必须和路由配置里一样
@@ -41,8 +42,8 @@ const SettingPage: React.FC = () => {
             <div className='bg-gray-200 min-h-screen'>
                 {/* 返回按钮 */}
                 <button
-                    onClick={() => navigate(-1)}
                     className="fixed top-4 left-4 rounded-full w-9 h-9 p-1 bg-gray-100 hover:bg-gray-300 shadow-md"
+                    onClick={() => navigate(-1)}
                 >
                     <ArrowLeftIcon />
                 </button>
@@ -58,8 +59,8 @@ const SettingPage: React.FC = () => {
 
                 {/* 添加新手势按钮 */}
                 <button
-                    onClick={() => setModalOpen(true)}
                     className="fixed bottom-4 right-4 rounded-full w-12 h-12 p-2 bg-teal-400 text-white hover:bg-teal-600 shadow-md"
+                    onClick={() => setModalOpen(true)}
                 >
                     <PlusIcon />
                 </button>
@@ -67,6 +68,6 @@ const SettingPage: React.FC = () => {
             </div>
         </>
     );
-}
+};
 
 export default SettingPage;

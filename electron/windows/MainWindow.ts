@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import path from 'node:path';
 
-import { VITE_DEV_SERVER_URL, iconSuffix } from '@common/constants/environment';
+import { ICON_SUFFIX, VITE_DEV_SERVER_URL } from '@common/constants/environment';
 
 class MainWindow {
     private window: BrowserWindow | null = null;
@@ -12,7 +12,7 @@ class MainWindow {
 
     private createWindow(): void {
         this.window = new BrowserWindow({
-            icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${iconSuffix}`),
+            icon: path.join(process.env.VITE_PUBLIC!, `/images/icons/MainWindow.${ICON_SUFFIX}`),
             webPreferences: {
                 preload: path.join(__dirname, 'preload.mjs'),
                 nodeIntegration: false,

@@ -1,13 +1,13 @@
 import { useState } from "react";
-
-import { RootState } from "@/stores/redux";
 import { useSelector } from "react-redux";
+
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 import type { AppConfig } from "@common/types/config";
 
-import { Sidebar, SoftwareModal } from "@/components";
-import { GlobalSoftwareCard, SoftwareCard } from "@/components/SoftwareCard";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { RootState } from "@/stores/redux";
+
+import { GlobalSoftwareCard, Sidebar, SoftwareCard, SoftwareModal } from "@/components";
 
 const Dashboard: React.FC = () => {
     const appsConfigs: AppConfig[] = useSelector((state: RootState) => state.config.apps);
@@ -51,6 +51,6 @@ const Dashboard: React.FC = () => {
             </div>
         </div >
     );
-}
+};
 
 export default Dashboard;

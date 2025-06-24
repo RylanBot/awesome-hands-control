@@ -1,8 +1,8 @@
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
 import { updateConfig } from "@/stores/configSlice";
-import { useDispatch } from "react-redux";
 
 import { CameraWindowBar, MainWindowBar } from "@/components/WindowBar";
 import { Dashboard, EmptySlot, GestureRecognition, SettingPage } from "@/pages";

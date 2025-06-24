@@ -93,8 +93,10 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             :
                             <>
                                 {base64Icon ?
-                                    <img src={`data:image/x-icon;base64,${base64Icon}`}
-                                        className="w-24 h-24 p-4" />
+                                    <img
+                                      className="w-24 h-24 p-4" 
+                                      src={`data:image/x-icon;base64,${base64Icon}`}
+                                    />
                                     :
                                     <PhotoIcon className="w-24 h-24 text-teal-500 p-8" />}
                             </>
@@ -103,27 +105,33 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
 
                 <input
+                    className="hidden"
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileInputChange}
                     accept=".jpg, .jpeg, .png, .exe"
-                    className="hidden"
                 />
 
                 <input
+                    className="w-full mt-8 rounded-lg focus:ring-emerald-500 focus:ring-2 focus:border-transparent px-4 py-2 italic font-mono"
                     type="text"
                     value={appName}
                     onChange={(e) => setAppName(e.target.value)}
                     placeholder="Software process name"
-                    className="w-full mt-8 rounded-lg focus:ring-emerald-500 focus:ring-2 focus:border-transparent px-4 py-2 italic font-mono"
                 />
 
                 <div className="flex justify-end mt-8 space-x-2">
-                    <button onClick={() => onClose()} className="text-sm bg-gray-200 hover:bg-gray-300 rounded py-2 px-4">
-                        Cancel
+                    <button
+                      className="text-sm bg-gray-200 hover:bg-gray-300 rounded py-2 px-4" 
+                      onClick={onClose}
+                    >
+                      Cancel
                     </button>
-                    <button onClick={handleSubmit} className="text-sm bg-teal-500 hover:bg-teal-600 rounded py-2 px-4 text-white">
-                        Apply
+                    <button
+                      className="text-sm bg-teal-500 hover:bg-teal-600 rounded py-2 px-4 text-white"
+                      onClick={handleSubmit}
+                    >
+                      Apply
                     </button>
                 </div>
 
@@ -131,6 +139,6 @@ const SoftwareModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
         </div>
     );
-}
+};
 
 export default SoftwareModal;
