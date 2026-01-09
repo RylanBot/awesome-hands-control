@@ -2,7 +2,7 @@
   "author": "Rylan",
   "name": "awesome-hands-control",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A powerful tool for controlling applications using hand gestures.",
   "type": "module",
   "scripts": {
